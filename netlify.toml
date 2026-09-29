@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Proxy the backend through this site so browsers treat its session cookie as
+# first-party. Keep these rules before the SPA fallback below.
+[[redirects]]
+  from = "/api/*"
+  to = "https://joana-unrevertible-gail.ngrok-free.dev/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/oauth2/*"
+  to = "https://joana-unrevertible-gail.ngrok-free.dev/oauth2/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/login/oauth2/*"
+  to = "https://joana-unrevertible-gail.ngrok-free.dev/login/oauth2/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

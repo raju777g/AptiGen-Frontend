@@ -1,0 +1,4 @@
+/api/* https://joana-unrevertible-gail.ngrok-free.dev/api/:splat 200!
+/oauth2/* https://joana-unrevertible-gail.ngrok-free.dev/oauth2/:splat 200!
+/login/oauth2/* https://joana-unrevertible-gail.ngrok-free.dev/login/oauth2/:splat 200!
+/* /index.html 200
