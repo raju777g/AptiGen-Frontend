@@ -17,7 +17,7 @@ import BuyCoinsPage from "./pages/BuyCoinsPage";
 import NotificationBell from "./components/NotificationBell";
 import { useThemeStore } from "./store/themeStore";
 import Topbar from "./components/Topbar";
-import Sidebar from "./components/SideBar";
+import Sidebar from "./components/Sidebar";
 import ContestsPage from "./pages/ContestsPage";
 import LandingPage from "./pages/LandingPage";
 import DashboardPage from "./pages/DashboardPage";
