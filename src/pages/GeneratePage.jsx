@@ -192,10 +192,10 @@ export default function GeneratePage() {
           <p className="generate-caption text-white/40 text-sm">Upload notes or MCQs. AptiGen will recognize the material and prepare your test.</p>
         </div>
 
-        <div className="generate-mode-tab mb-6 flex items-center gap-3 rounded-xl border border-primary/30 bg-base-100/80 p-4 shadow-lg">
+        {/* <div className="generate-mode-tab mb-6 flex items-center gap-3 rounded-xl border border-primary/30 bg-base-100/80 p-4 shadow-lg">
           <span className="text-2xl">🧠</span>
           <div><h2 className="font-semibold">From notes or MCQs</h2><p className="text-xs text-base-content/60">AptiGen Vision detects the content type and preserves the original language.</p></div>
-        </div>
+        </div> */}
 
         <div className="generate-mode-tab mb-6 rounded-xl border border-primary/30 bg-base-100/80 p-4 shadow-lg">
           <div className="flex items-center gap-3">
