@@ -24,7 +24,7 @@ export default function GeneratePage() {
   const [title, setTitle] = useState("");
   const [seconds, setSeconds] = useState(120);
 
-  const [inputMode, setInputMode] = useState("HANDWRITTEN_OR_OTHER_LANGUAGE");
+  const [inputMode, setInputMode] = useState("ENGLISH_PRINTED");
   const [questionCount, setQuestionCount] = useState(10);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
@@ -203,11 +203,11 @@ export default function GeneratePage() {
             <div><h2 className="font-semibold">Choose your source type</h2><p className="text-xs text-base-content/60">This selects the extraction service used for your uploaded pages.</p></div>
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Extraction source type">
-            <button type="button" role="radio" aria-checked={inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE"} onClick={() => setInputMode("HANDWRITTEN_OR_OTHER_LANGUAGE")} className={`rounded-xl border p-3 text-left transition ${inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
+            <button type="button" role="radio" aria-checked={inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE"} onClick={() => setInputMode("HANDWRITTEN_OR_OTHER_LANGUAGE")} className={`order-last rounded-xl border p-3 text-left transition ${inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
               <span className="block font-semibold">✍️ Handwritten / other language</span>
               <span className="mt-1 block text-xs text-base-content/60">Gemini reads the original images directly.</span>
             </button>
-            <button type="button" role="radio" aria-checked={inputMode === "ENGLISH_PRINTED"} onClick={() => setInputMode("ENGLISH_PRINTED")} className={`rounded-xl border p-3 text-left transition ${inputMode === "ENGLISH_PRINTED" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
+            <button type="button" role="radio" aria-checked={inputMode === "ENGLISH_PRINTED"} onClick={() => setInputMode("ENGLISH_PRINTED")} className={`order-first rounded-xl border p-3 text-left transition ${inputMode === "ENGLISH_PRINTED" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
               <span className="block font-semibold">🖨️ English printed text</span>
               <span className="mt-1 block text-xs text-base-content/60">OCR extracts text, then Groq extracts questions.</span>
             </button>
