@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { useUiStore } from "../store/uiStore";
 import logoMark from "../assets/logo-mark.png";
-import MotivationalQuoteModal, { ADDITIONAL_MOTIVATIONAL_QUOTES, MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
+import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
 import iconDashboard from "../assets/icon-dashboard.png"; // add this one if you have a dashboard-specific icon, else reuse an existing one
 import iconGenerate from "../assets/icon-generate.png";
 import iconMyTests from "../assets/icon-mytests.png"; // same — add or reuse
@@ -31,7 +31,7 @@ export default function Sidebar() {
   const [quoteIndex, setQuoteIndex] = useState(-1);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [proToast, setProToast] = useState(false);
-  const advanceQuote = () => setQuoteIndex((index) => Math.floor(Math.random() * ADDITIONAL_MOTIVATIONAL_QUOTES.length));
+  const advanceQuote = () => setQuoteIndex((index) => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
 
   return (
     <>

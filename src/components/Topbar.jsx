@@ -13,7 +13,7 @@ import changePic from "../assets/avatars/change-pic.png";
 import resetPass from "../assets/avatars/reset-pass.png";
 import userLogout from "../assets/avatars/user-logout.png";
 import logoMark from "../assets/logo-mark.png";
-import MotivationalQuoteModal, { ADDITIONAL_MOTIVATIONAL_QUOTES, MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
+import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
 
 export default function Topbar() {
   const user = useAuthStore((s) => s.user);
@@ -111,7 +111,7 @@ export default function Topbar() {
   };
 
   const handleLogoClick = () => {
-    setQuoteIndex((index) => (index + 1) % MOTIVATIONAL_QUOTES.length);
+    setQuoteIndex((index) => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
     setQuoteOpen(true);
   };
 
@@ -211,7 +211,7 @@ export default function Topbar() {
       <CheckInModal result={checkInResult} onClose={() => setCheckInResult(null)} />
       <AvatarPickerModal open={avatarModalOpen} onClose={() => setAvatarModalOpen(false)} />
       <LogoutConfirmModal open={logoutModalOpen} onConfirm={handleConfirmLogout} onCancel={() => setLogoutModalOpen(false)} />
-      <MotivationalQuoteModal open={quoteOpen} quoteIndex={quoteIndex} onClose={() => setQuoteOpen(false)} onNext={() => setQuoteIndex((index) => Math.floor(Math.random() * ADDITIONAL_MOTIVATIONAL_QUOTES.length))} />
+      <MotivationalQuoteModal open={quoteOpen} quoteIndex={quoteIndex} onClose={() => setQuoteOpen(false)} onNext={() => setQuoteIndex((index) => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length))} />
     </>
   );
 }

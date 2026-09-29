@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 
 // Replace these starter quotes with the full set of 31 supplied by the user.
-export const ADDITIONAL_MOTIVATIONAL_QUOTES = [
+export const MOTIVATIONAL_QUOTES = [
   "Small steps lead to big achievements.",
+  "If you can't run then just walk, if you can't walk then just crawl. But don't stop moving 🐦‍🔥",
   "Your future is built by today's efforts.",
   "Every page you read brings you closer.",
   "Consistency beats temporary motivation.",
