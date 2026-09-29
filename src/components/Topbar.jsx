@@ -13,7 +13,7 @@ import changePic from "../assets/avatars/change-pic.png";
 import resetPass from "../assets/avatars/reset-pass.png";
 import userLogout from "../assets/avatars/user-logout.png";
 import logoMark from "../assets/logo-mark.png";
-import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
+import MotivationalQuoteModal, { ADDITIONAL_MOTIVATIONAL_QUOTES, MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
 
 export default function Topbar() {
   const user = useAuthStore((s) => s.user);

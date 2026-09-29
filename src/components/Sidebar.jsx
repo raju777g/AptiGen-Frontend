@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { useUiStore } from "../store/uiStore";
 import logoMark from "../assets/logo-mark.png";
-import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
+import MotivationalQuoteModal, { ADDITIONAL_MOTIVATIONAL_QUOTES, MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
 import iconDashboard from "../assets/icon-dashboard.png"; // add this one if you have a dashboard-specific icon, else reuse an existing one
 import iconGenerate from "../assets/icon-generate.png";
 import iconMyTests from "../assets/icon-mytests.png"; // same — add or reuse
