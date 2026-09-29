@@ -31,7 +31,7 @@ export default function Sidebar() {
   const [quoteIndex, setQuoteIndex] = useState(-1);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [proToast, setProToast] = useState(false);
-  const advanceQuote = () => setQuoteIndex((index) => Math.floor(Math.random() * 31));
+  const advanceQuote = () => setQuoteIndex((index) => Math.floor(Math.random() * ADDITIONAL_MOTIVATIONAL_QUOTES.length));
 
   return (
     <>

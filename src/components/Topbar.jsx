@@ -211,7 +211,7 @@ export default function Topbar() {
       <CheckInModal result={checkInResult} onClose={() => setCheckInResult(null)} />
       <AvatarPickerModal open={avatarModalOpen} onClose={() => setAvatarModalOpen(false)} />
       <LogoutConfirmModal open={logoutModalOpen} onConfirm={handleConfirmLogout} onCancel={() => setLogoutModalOpen(false)} />
-      <MotivationalQuoteModal open={quoteOpen} quoteIndex={quoteIndex} onClose={() => setQuoteOpen(false)} onNext={() => setQuoteIndex((index) => (index + 1) % MOTIVATIONAL_QUOTES.length)} />
+      <MotivationalQuoteModal open={quoteOpen} quoteIndex={quoteIndex} onClose={() => setQuoteOpen(false)} onNext={() => setQuoteIndex((index) => Math.floor(Math.random() * ADDITIONAL_MOTIVATIONAL_QUOTES.length))} />
     </>
   );
 }
