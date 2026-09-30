@@ -5,6 +5,38 @@
        themes: aptigen --default, dark --prefersdark;
    }
 
+   /* Keep the new folder treatment ahead of the legacy theme overrides. */
+   .my-tests-folder-panel { background: linear-gradient(145deg, rgba(9,25,54,.98), rgba(12,23,51,.98) 52%, rgba(24,19,62,.98)); border-color: rgba(57,105,187,.45); }
+   .my-tests-folder-card { min-height: 6.8rem; overflow: hidden; isolation: isolate; border-radius: 1.05rem; background: linear-gradient(120deg, rgba(27,43,82,.95), rgba(20,38,78,.9)); border-color: rgba(69,133,235,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(2,8,28,.2); }
+   .my-tests-folder-card.my-tests-recent-folder { background: linear-gradient(120deg, rgba(119,37,154,.82), rgba(55,27,108,.96)); }
+   .my-tests-folder-card.folder-opening { animation: folder-shine-card .64s ease-out both !important; }
+   .my-tests-folder-card.folder-opening::after { animation: folder-shine-sweep .64s ease-out both !important; }
+
+   /* My Tests visual refresh */
+   .my-tests-hero { min-height: 13.5rem; border: 1px solid rgba(124,58,237,.68); background: linear-gradient(110deg, #111b46 0%, #121b45 42%, #29105e 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 18px 36px rgba(5,9,35,.28); }
+   .my-tests-hero::after { position: absolute; content: ""; inset: auto -8% -70% 28%; height: 170%; border-top: 1px solid rgba(118,92,255,.45); border-radius: 50%; transform: rotate(-7deg); box-shadow: 0 -16px 0 rgba(118,92,255,.12), 0 -32px 0 rgba(118,92,255,.08); }
+   .my-tests-hero-glow { position: absolute; inset: 0; background: radial-gradient(circle at 85% 30%, rgba(132,39,255,.4), transparent 34%); pointer-events: none; }
+   .my-tests-eyebrow { display: inline-flex; align-items: center; gap: .55rem; border-radius: 999px; padding: .52rem 1rem; color: #fff; font-size: .82rem; font-weight: 750; background: linear-gradient(100deg, #d946ef, #4338ca 70%); box-shadow: 0 7px 18px rgba(99,43,202,.3); }
+   .my-tests-hero-logo { position: relative; z-index: 1; width: min(42%, 29rem); margin-right: 2%; filter: drop-shadow(0 12px 18px rgba(123,58,237,.35)); animation: my-tests-logo-float 4.5s ease-in-out infinite; }
+   @keyframes my-tests-logo-float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-9px) rotate(1deg); } }
+   .my-tests-folder-panel { background: linear-gradient(145deg, rgba(9,25,54,.98), rgba(12,23,51,.98) 52%, rgba(24,19,62,.98)); border-color: rgba(57,105,187,.45); }
+   .my-tests-folder-card { min-height: 6.8rem; overflow: hidden; isolation: isolate; border-radius: 1.05rem; background: linear-gradient(120deg, rgba(27,43,82,.95), rgba(20,38,78,.9)); border-color: rgba(69,133,235,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(2,8,28,.2); }
+   .my-tests-folder-card::after { position: absolute; z-index: 0; content: ""; top: -50%; left: -35%; width: 22%; height: 200%; opacity: 0; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,.72), transparent); transform: rotate(22deg) translateX(-300%); }
+   .my-tests-folder-card > button, .my-tests-folder-card > .folder-card-menu { z-index: 1; }
+   .my-tests-folder-card:nth-child(4n + 1) { border-color: rgba(213,76,255,.8); background: linear-gradient(120deg, rgba(119,37,154,.72), rgba(40,28,101,.94)); }
+   .my-tests-folder-card:nth-child(4n + 2) { border-color: rgba(240,163,35,.8); background: linear-gradient(120deg, rgba(99,65,25,.72), rgba(36,35,64,.94)); }
+   .my-tests-folder-card:nth-child(4n + 3) { border-color: rgba(25,194,190,.8); background: linear-gradient(120deg, rgba(12,91,91,.72), rgba(27,42,90,.94)); }
+   .my-tests-folder-card:nth-child(4n) { border-color: rgba(71,119,255,.85); background: linear-gradient(120deg, rgba(28,59,135,.8), rgba(23,35,79,.94)); }
+   .my-tests-folder-card.my-tests-recent-folder { background: linear-gradient(120deg, rgba(119,37,154,.82), rgba(55,27,108,.96)); }
+   .my-tests-folder-card.folder-opening { animation: folder-shine-card .64s ease-out both; }
+   .my-tests-folder-card.folder-opening::after { animation: folder-shine-sweep .64s ease-out both; }
+   @keyframes folder-shine-card { 0%,100% { transform: translateY(0); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(2,8,28,.2); } 38% { transform: translateY(-3px); box-shadow: 0 0 30px rgba(197,112,255,.58), inset 0 1px 0 rgba(255,255,255,.35); } }
+   @keyframes folder-shine-sweep { 0% { opacity: 0; transform: rotate(22deg) translateX(-300%); } 18% { opacity: 1; } 100% { opacity: 0; transform: rotate(22deg) translateX(760%); } }
+   .my-tests-bottom-banner { min-height: 8.2rem; border: 1px dashed rgba(78,130,235,.68); background: linear-gradient(105deg, rgba(11,32,68,.98), rgba(28,22,71,.98)); }
+   .my-tests-bottom-logo { position: absolute; bottom: -3.4rem; left: 1.2rem; width: 13rem; filter: drop-shadow(0 8px 15px rgba(81,52,219,.35)); }
+   @media (max-width: 639px) { .my-tests-hero { min-height: 12rem; } .my-tests-hero-logo { display: none; } .my-tests-bottom-logo { width: 9rem; left: -.5rem; bottom: -2.2rem; opacity: .62; } .my-tests-bottom-banner > div { margin-left: 0; } }
+   @media (prefers-reduced-motion: reduce) { .my-tests-hero-logo, .my-tests-folder-card.folder-opening, .my-tests-folder-card.folder-opening::after { animation: none !important; } }
+
    :root {
        --ink: #10172A;
        --paper: #F6F4EE;

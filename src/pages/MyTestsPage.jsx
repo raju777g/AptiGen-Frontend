@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { useTestStore } from "../store/testStore";
 import { useDashboardStore } from "../store/dashboardStore";
-import docIllustration from "../assets/icon-doc-ilus.png";
+import docsLogo from "../assets/myTestsLogos/docs-logo.png";
+import bottomDocsLogo from "../assets/myTestsLogos/bottom-doc-ogo.png";
 import folderIcon from "../assets/folder.png";
 import testIcon from "../assets/test.png";
 import folderClickSound from "../assets/folderClick.wav";
@@ -186,7 +187,6 @@ export default function MyTestsPage() {
   const [moveRecent, setMoveRecent] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const [moveFolderViewId, setMoveFolderViewId] = useState(null);
-  const [folderRipple, setFolderRipple] = useState(null);
   const [zoomFolderId, setZoomFolderId] = useState(null);
   const folderOpenTimerRef = useRef(null);
   const folderPanelRef = useRef(null);
@@ -317,11 +317,6 @@ export default function MyTestsPage() {
   const openFolder = (folderId, event, recordHistory = true) => {
     if (recordHistory && folderId !== currentFolderId) setFolderHistory((history) => [...history, currentFolderId]);
     setOpenFolderMenuId(null);
-    const rect = folderPanelRef.current?.getBoundingClientRect();
-    const x = rect ? Math.max(0, Math.min(rect.width, event.clientX - rect.left)) : 0;
-    const y = rect ? Math.max(0, Math.min(rect.height, event.clientY - rect.top)) : 0;
-    setFolderRipple({ token: Date.now() + Math.random(), x, y });
-
     const sound = new Audio(folderClickSound);
     sound.volume = 0.45;
     sound.play().catch(() => {});
@@ -332,7 +327,7 @@ export default function MyTestsPage() {
     folderOpenTimerRef.current = window.setTimeout(() => {
       setCurrentFolderId(folderId);
       setZoomFolderId(null);
-    }, 240);
+    }, 300);
   };
 
   const goBackFolder = (event) => {
@@ -345,24 +340,26 @@ export default function MyTestsPage() {
   useEffect(() => () => window.clearTimeout(folderOpenTimerRef.current), []);
 
   return (
-    <div>
+    <div className="my-tests-page">
       {/* Header */}
-      <div className="relative rounded-2xl overflow-hidden mb-6 p-6 lg:p-8" style={{ background: "var(--hero-bg)" }}>
+      <div className="my-tests-hero relative mb-6 overflow-hidden rounded-2xl p-6 lg:p-8">
+        <div className="my-tests-hero-glow" aria-hidden="true" />
         <div className="relative z-10 flex items-center justify-between gap-6">
           <div>
-            <h1 className="font-hero font-extrabold text-3xl text-white mb-1">
+            <div className="my-tests-eyebrow"><span aria-hidden="true">▣</span> My Tests</div>
+            <h1 className="mt-3 font-hero text-4xl font-extrabold leading-none text-white sm:text-5xl">
               My{" "}
               <span style={{ background: "var(--hero-gradient-text)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 Tests
               </span>
             </h1>
-            <p className="text-white/60 text-sm">Create, manage and take your tests. Track your progress and keep improving!</p>
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/70 sm:text-base">Create, manage and take your tests. Organize them in folders, track your progress and keep improving!</p>
           </div>
           <div className="hidden lg:flex items-center gap-4">
             <div className="font-hand text-lg text-purple-300/70 leading-tight -rotate-2 text-right">
               Practice<br />Test<br />Improve<br />Grow
             </div>
-            <img src={docIllustration} alt="" className="w-28" />
+            <img src={docsLogo} alt="" className="my-tests-hero-logo" />
           </div>
         </div>
       </div>
@@ -410,7 +407,6 @@ export default function MyTestsPage() {
       </div>
 
       <section ref={folderPanelRef} className="my-tests-folder-panel relative isolate mb-5 overflow-hidden rounded-2xl border p-4">
-        {folderRipple && <div key={folderRipple.token} className="my-tests-folder-ripple" style={{ "--ripple-x": `${folderRipple.x}px`, "--ripple-y": `${folderRipple.y}px` }} aria-hidden="true" />}
         <div className="relative z-10">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -499,15 +495,16 @@ export default function MyTestsPage() {
       </div>}
 
       {/* Bottom banner */}
-      <div className="relative rounded-2xl overflow-hidden p-6 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ background: "var(--hero-bg)" }}>
+      <div className="my-tests-bottom-banner relative flex flex-col items-center justify-between gap-4 overflow-hidden rounded-2xl p-5 sm:flex-row sm:p-6">
+        <img src={bottomDocsLogo} alt="" className="my-tests-bottom-logo" />
         <div className="flex items-center gap-3">
           <span className="text-2xl">🎯</span>
           <div>
-            <h3 className="font-hero font-semibold text-white">Consistency leads to success!</h3>
-            <p className="text-xs text-white/50">Take more tests, track your progress and become a better version of you.</p>
+            <h3 className="font-hero font-semibold text-white">Ready to take a new test?</h3>
+            <p className="text-xs text-white/60">Create a new test or open an existing folder to get started.</p>
           </div>
         </div>
-        <p className="font-hand text-lg text-white/40 italic">"Discipline today, success tomorrow."</p>
+        <Link to="/generate" className="relative z-10 btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-lg">＋ Create New Test</Link>
       </div>
     </div>
   );
