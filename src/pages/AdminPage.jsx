@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import { useAuthStore } from "../store/authStore";
 import { compressImageIfNeeded } from "../utils/compressImage";
+import { useNavigate } from "react-router-dom";
 
 const card = "admin-panel rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-xl transition duration-300 hover:-translate-y-1 hover:border-violet-400/30 hover:shadow-[0_18px_50px_rgba(91,33,182,.16)]";
 const input = "w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-violet-400";
@@ -26,6 +27,7 @@ function ActivityList({ title, rows, render }) {
 
 export default function AdminPage() {
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const [period, setPeriod] = useState("7days");
   const [from, setFrom] = useState(dateOnly(new Date(Date.now() - 6 * 86400000)));
@@ -47,6 +49,8 @@ export default function AdminPage() {
   const [contestBusy, setContestBusy] = useState(false);
   const [contestNotice, setContestNotice] = useState("");
   const [adminContests, setAdminContests] = useState([]);
+  const [adminTests, setAdminTests] = useState([]);
+  const [contestTestId, setContestTestId] = useState("");
   const [activeSection, setActiveSection] = useState("overview");
 
   const loadOverview = useCallback(async () => {
@@ -65,6 +69,7 @@ export default function AdminPage() {
   useEffect(() => { loadOverview().catch((e) => setError(e?.response?.data?.message || "Could not load admin metrics.")); }, [loadOverview]);
   useEffect(() => { loadChats().catch(() => {}); }, [loadChats]);
   useEffect(() => { loadContests().catch(() => {}); }, [loadContests]);
+  useEffect(() => { api.get("/tests/mine").then(({ data }) => setAdminTests(Array.isArray(data) ? data : [])).catch(() => {}); }, []);
   useEffect(() => { const timer = window.setInterval(() => loadChats().catch(() => {}), 5000); return () => window.clearInterval(timer); }, [loadChats]);
   useEffect(() => {
     if (!activeChat) return undefined;
@@ -114,17 +119,23 @@ export default function AdminPage() {
 
   const createContest = async (event) => {
     event.preventDefault();
-    if (!contestTitle.trim() || !contestImages.length) { setError("Add a contest title and at least one image."); return; }
+    if (!contestTestId && (!contestTitle.trim() || !contestImages.length)) { setError("Choose an existing test or add a contest title and image."); return; }
     setContestBusy(true); setError(""); setContestNotice("");
     try {
-      const form = new FormData();
-      const uploadImages = await Promise.all(contestImages.map(compressImageIfNeeded));
-      uploadImages.forEach((file) => form.append("images", file));
-      form.append("title", contestTitle.trim()); form.append("timerMode", "STANDARD"); form.append("secondsPerQuestion", "60"); form.append("mode", "AUTO"); form.append("questionCount", "10");
-      const { data: test } = await api.post("/generate", form, { headers: { "Content-Type": "multipart/form-data" } });
+      let test;
+      if (contestTestId) {
+        test = adminTests.find((item) => String(item.id) === String(contestTestId));
+      } else {
+        const form = new FormData();
+        const uploadImages = await Promise.all(contestImages.map(compressImageIfNeeded));
+        uploadImages.forEach((file) => form.append("images", file));
+        form.append("title", contestTitle.trim()); form.append("timerMode", "STANDARD"); form.append("secondsPerQuestion", "60"); form.append("mode", "AUTO"); form.append("questionCount", "10");
+        const response = await api.post("/generate", form, { headers: { "Content-Type": "multipart/form-data" } });
+        test = response.data;
+      }
       const { data: contest } = await api.post("/contests/admin", { testId: test.id, entryFeeCoins: Number(contestFee) });
       setContestNotice(`Contest scheduled for Sunday ${contest.scheduledDate}; results publish Monday at 7:00 PM.`);
-      setContestTitle(""); setContestImages([]);
+      setContestTitle(""); setContestImages([]); setContestTestId("");
       await loadContests();
     } catch (e) { setError(e?.response?.data?.message || "Could not create the weekly contest."); }
     finally { setContestBusy(false); }
@@ -141,7 +152,7 @@ export default function AdminPage() {
   const maxBar = useMemo(() => Math.max(1, ...bars.map((d) => Number(d.newUsers || 0))), [bars]);
   if (user?.role !== "ADMIN") return <div className="mx-auto max-w-xl rounded-2xl border border-rose-400/30 bg-rose-950/40 p-8 text-center text-white"><h1 className="text-2xl font-bold">Administrator access required</h1><p className="mt-2 text-slate-300">This account is not enabled for the admin panel.</p><button onClick={logout} className="mt-5 rounded-lg bg-violet-600 px-4 py-2">Sign out</button></div>;
 
-  return <div className="admin-shell relative isolate min-h-screen -m-4 overflow-hidden bg-[#080d19] p-4 text-slate-100 lg:-m-6 lg:p-7">
+  return <div className="admin-shell relative isolate min-h-screen -m-4 overflow-hidden bg-[#080d19] p-4 pl-72 text-slate-100 lg:-m-6 lg:p-7 lg:pl-64">
     <style>{`
       @keyframes admin-enter { from { opacity:0; transform:translateY(14px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
       @keyframes admin-drift { 0%,100% { transform:translate3d(0,0,0) scale(1); } 50% { transform:translate3d(18px,-16px,0) scale(1.08); } }
@@ -151,6 +162,8 @@ export default function AdminPage() {
       .admin-sidebar { background:linear-gradient(180deg,rgba(16,22,55,.98),rgba(7,13,32,.98)); }
       .admin-sidebar { display:none!important; }
       .admin-section-nav { background:linear-gradient(180deg,rgba(16,22,55,.98),rgba(7,13,32,.98)); }
+      .admin-section-nav { display:none!important; }
+      .admin-workflow-sidebar { background:linear-gradient(180deg,rgba(16,22,55,.98),rgba(7,13,32,.98)); }
       .admin-main[data-section="users"] > section:nth-of-type(1), .admin-main[data-section="users"] > section:nth-of-type(3), .admin-main[data-section="users"] > section:nth-of-type(4) { display:none; }
       .admin-main[data-section="overview"] > section:nth-of-type(2), .admin-main[data-section="overview"] > section:nth-of-type(3), .admin-main[data-section="overview"] > section:nth-of-type(4) { display:none; }
       .admin-main[data-section="analytics"] > section:nth-of-type(2), .admin-main[data-section="analytics"] > section:nth-of-type(3), .admin-main[data-section="analytics"] > section:nth-of-type(4) { display:none; }
@@ -180,6 +193,20 @@ export default function AdminPage() {
       .admin-shell header p:first-child { animation:admin-pulse 3s ease-in-out infinite; }
       @media (prefers-reduced-motion:reduce) { .admin-shell *, .admin-shell *::before, .admin-shell *::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important; } }
     `}</style>
+    <aside className="admin-workflow-sidebar fixed left-0 top-0 z-20 flex h-screen w-64 flex-col border-r border-white/10 p-4 text-slate-100 shadow-2xl lg:w-60">
+      <div className="mb-8 border-b border-white/10 px-2 pb-6"><p className="text-2xl font-black">Apti<span className="text-violet-400">Gen</span></p><p className="mt-1 text-[9px] uppercase tracking-[.3em] text-slate-500">Control room</p></div>
+      <nav className="space-y-1.5">
+        {[['⌂', 'Overview', 'overview'], ['♙', 'Users', 'users'], ['▥', 'Analytics', 'analytics'], ['♕', 'Contests', 'contests'], ['◌', 'Support', 'support'], ['⚙', 'Settings', 'settings']].map(([icon, label, section]) => <button type="button" key={label} onClick={() => setActiveSection(section)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm ${activeSection === section ? 'bg-violet-600/40 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}><span className="w-5 text-center text-lg">{icon}</span>{label}</button>)}
+      </nav>
+      <div className="my-5 border-t border-white/10" />
+      <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[.2em] text-slate-500">Test workflow</p>
+      <nav className="space-y-1.5">
+        <button type="button" onClick={() => navigate('/admin/generate')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300 hover:bg-violet-500/15 hover:text-white"><span className="w-5 text-center text-lg">✦</span>Generate Test</button>
+        <button type="button" onClick={() => navigate('/admin/tests')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300 hover:bg-violet-500/15 hover:text-white"><span className="w-5 text-center text-lg">▤</span>My Tests</button>
+        <button type="button" onClick={() => navigate('/admin/contests')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300 hover:bg-violet-500/15 hover:text-white"><span className="w-5 text-center text-lg">♕</span>Add Contest</button>
+        <button type="button" onClick={() => navigate('/admin/mock-tests')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300 hover:bg-violet-500/15 hover:text-white"><span className="w-5 text-center text-lg">✚</span>Add Mock Test</button>
+      </nav>
+    </aside>
     <div className="mx-auto flex max-w-[1800px] gap-5"><aside className="admin-section-nav w-56 shrink-0 rounded-2xl border border-white/10 p-4"><div className="mb-8 px-2"><p className="text-2xl font-black">Apti<span className="text-violet-400">Gen</span></p><p className="text-[9px] uppercase tracking-[.3em] text-slate-500">Control room</p></div><nav className="space-y-2">{[["⌂", "Overview", "overview"], ["♙", "Users", "users"], ["▥", "Analytics", "analytics"], ["♕", "Contests", "contests"], ["◌", "Support", "support"], ["⚙", "Settings", "settings"]].map(([icon, label, section]) => <button type="button" key={label} onClick={() => setActiveSection(section)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm ${activeSection === section ? "bg-violet-600/30 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><span className="text-lg">{icon}</span>{label}</button>)}</nav></aside>
       <aside className="admin-sidebar hidden w-56 shrink-0 rounded-2xl border border-white/10 p-4 lg:block"><div className="mb-8 px-2"><p className="text-2xl font-black">Apti<span className="text-violet-400">Gen</span></p><p className="text-[9px] uppercase tracking-[.3em] text-slate-500">Control room</p></div><nav className="space-y-2">{[["⌂", "Overview"], ["♙", "Users"], ["▥", "Analytics"], ["♕", "Contests"], ["◌", "Support"], ["⚙", "Settings"]].map(([icon, label], index) => <a key={label} href={index === 0 ? "#top" : `#${label.toLowerCase()}`} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${index === 0 ? "bg-violet-600/30 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><span className="text-lg">{icon}</span>{label}</a>)}</nav></aside>
       <div className="min-w-0 flex-1"><header id="top" className="mx-auto mb-7 flex max-w-[1600px] flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[.25em] text-violet-300">AptiGen control room</p><h1 className="mt-1 text-3xl font-extrabold">Admin dashboard</h1><p className="mt-1 text-sm text-slate-400">Signed in as {user?.email}</p></div><div className="flex items-center gap-3"><span className="hidden rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 sm:block">⌁ Past 7 days</span><button onClick={logout} className="rounded-xl border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800">Sign out</button></div></header>

@@ -5,6 +5,60 @@
        themes: aptigen --default, dark --prefersdark;
    }
 
+   .mock-tests-page article,
+   .admin-mock-workspace article {
+       background-image: linear-gradient(120deg, rgba(14, 20, 58, .9), rgba(24, 13, 69, .82)), url("./assets/myTestsLogos/mockTest-bg.png") !important;
+       background-size: cover;
+       background-position: center;
+   }
+
+   .mock-tests-page article > p:first-child,
+   .admin-mock-workspace article p.text-base-content\/55 {
+       display: none;
+   }
+
+   @media (max-width: 639px) {
+       .my-tests-search { height: 3rem !important; min-height: 3rem !important; max-height: 3rem !important; }
+       .my-tests-hero { background-image: linear-gradient(110deg, #111b46 0%, rgba(18,27,69,.92) 48%, rgba(41,16,94,.7) 100%), url("./assets/myTestsLogos/docs-logo.png") !important; background-position: center, right -3.25rem bottom -1.3rem !important; background-size: cover, 15.5rem auto !important; background-repeat: no-repeat !important; }
+       .my-tests-hero-logo { display: none !important; }
+   }
+
+   .my-tests-search { height: 3rem !important; min-height: 3rem !important; max-height: 3rem; }
+   .my-tests-hero-logo { position: absolute !important; z-index: 1; right: -3% !important; bottom: -2.5rem !important; width: min(48%, 34rem) !important; max-height: 125%; object-fit: contain; margin: 0 !important; }
+   @media (max-width: 639px) {
+       .my-tests-search { height: 3rem !important; min-height: 3rem !important; max-height: 3rem; padding-block: .5rem !important; }
+       .my-tests-hero { background-image: linear-gradient(110deg, #111b46 0%, rgba(18,27,69,.92) 48%, rgba(41,16,94,.7) 100%), url("./assets/myTestsLogos/docs-logo.png") !important; background-position: center, right -3.25rem bottom -1.3rem !important; background-size: cover, 15.5rem auto !important; background-repeat: no-repeat !important; }
+       .my-tests-hero-logo { display: none !important; }
+       .my-tests-hero > .relative { max-width: 100%; }
+   }
+
+   .my-tests-search { min-height: 3.65rem; }
+   .my-tests-folder-panel {
+       background:
+           radial-gradient(circle at 8% 12%, rgba(139,92,246,.28), transparent 24%),
+           radial-gradient(circle at 88% 18%, rgba(217,70,239,.2), transparent 28%),
+           radial-gradient(circle at 52% 100%, rgba(37,99,235,.3), transparent 34%),
+           linear-gradient(135deg, #080f2c 0%, #11194a 46%, #24114d 100%) !important;
+       border-color: rgba(124,92,246,.5) !important;
+       box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 14px 34px rgba(13,7,45,.34) !important;
+   }
+   .my-tests-folder-card,
+   .my-tests-folder-card:hover,
+   .my-tests-folder-card.my-tests-recent-folder,
+   .my-tests-folder-card.my-tests-recent-folder:hover {
+       background: transparent !important;
+       box-shadow: none !important;
+   }
+   .my-tests-folder-card { border-color: rgba(150,118,255,.65) !important; }
+   .my-tests-folder-card:hover { border-color: rgba(230,197,255,.95) !important; }
+   .folder-card-icon { width: 3.4rem !important; height: 3.4rem !important; filter: drop-shadow(0 0 10px rgba(158,119,255,.42)); }
+   @media (max-width: 639px) {
+       .my-tests-search { min-height: 3.65rem; padding-block: .75rem; }
+       .my-tests-hero-logo { display: block !important; position: absolute; right: -2.2rem; bottom: -1.4rem; width: 52%; max-width: 13rem; margin: 0; opacity: .8; }
+       .my-tests-hero > .relative { max-width: 78%; }
+       .folder-card-icon { width: 3.7rem !important; height: 3.7rem !important; }
+   }
+
    /* Keep the new folder treatment ahead of the legacy theme overrides. */
    .my-tests-folder-panel { background: linear-gradient(145deg, rgba(9,25,54,.98), rgba(12,23,51,.98) 52%, rgba(24,19,62,.98)); border-color: rgba(57,105,187,.45); }
    .my-tests-folder-card { min-height: 6.8rem; overflow: hidden; isolation: isolate; border-radius: 1.05rem; background: linear-gradient(120deg, rgba(27,43,82,.95), rgba(20,38,78,.9)); border-color: rgba(69,133,235,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(2,8,28,.2); }

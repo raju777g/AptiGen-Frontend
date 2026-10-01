@@ -24,6 +24,11 @@ import DashboardPage from "./pages/DashboardPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import AdminPage from "./pages/AdminPage";
+import MockTestsPage from "./pages/MockTestsPage";
+import AdminMockTestsPage from "./pages/AdminMockTestsPage";
+import AdminGeneratePage from "./pages/AdminGeneratePage";
+import AdminMyTestsPage from "./pages/AdminMyTestsPage";
+import AdminContestPage from "./pages/AdminContestPage";
 import { readActiveTestDraft, clearActiveTestDraft, getActiveTestDraftKey } from "./utils/activeTestDraft";
 import { api } from "./api/client";
 import { useTestStore } from "./store/testStore";
@@ -188,6 +193,10 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin" element={user?.role === "ADMIN" ? <AdminPage /> : user ? <Navigate to="/dashboard" /> : <Navigate to="/login?admin=1" />} />
+        <Route path="/admin/generate" element={user?.role === "ADMIN" ? <AdminGeneratePage /> : user ? <Navigate to="/dashboard" /> : <Navigate to="/login?admin=1" />} />
+        <Route path="/admin/tests" element={user?.role === "ADMIN" ? <AdminMyTestsPage /> : user ? <Navigate to="/dashboard" /> : <Navigate to="/login?admin=1" />} />
+        <Route path="/admin/contests" element={user?.role === "ADMIN" ? <AdminContestPage /> : user ? <Navigate to="/dashboard" /> : <Navigate to="/login?admin=1" />} />
+        <Route path="/admin/mock-tests" element={user?.role === "ADMIN" ? <AdminMockTestsPage /> : user ? <Navigate to="/dashboard" /> : <Navigate to="/login?admin=1" />} />
         <Route
           path="/dashboard"
           element={user?.role === "ADMIN" ? <Navigate to="/admin" /> : user ? <AppShell><DashboardPage /></AppShell> : <Navigate to="/login" />}
@@ -212,6 +221,10 @@ function App() {
         <Route
           path="/practice"
           element={user ? <AppShell><PublicTestsPage /></AppShell> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/mock-tests"
+          element={user ? <AppShell><MockTestsPage /></AppShell> : <Navigate to="/login" />}
         />
         {/* Referral program disabled for now.
         <Route

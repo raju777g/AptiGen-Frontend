@@ -29,6 +29,7 @@ export default function GeneratePage() {
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [coinWarning, setCoinWarning] = useState("");
 
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -36,7 +37,10 @@ export default function GeneratePage() {
 
   const { generateTest, isGenerating, error } = useTestStore();
   const [createdTest, setCreatedTest] = useState(null);
+  const balance = useWalletStore((s) => s.balance);
   const fetchWallet = useWalletStore((s) => s.fetchWallet);
+
+  useEffect(() => { fetchWallet().catch(() => {}); }, [fetchWallet]);
 
   const addFiles = (fileList) => {
     const selectedFiles = Array.from(fileList);
@@ -145,6 +149,13 @@ export default function GeneratePage() {
     e.preventDefault();
     if (pages.length === 0) return;
     try {
+      const availableCoins = balance ?? await fetchWallet();
+      const requestedQuestions = Number(questionCount);
+      if (Number.isFinite(availableCoins) && availableCoins < requestedQuestions) {
+        setCoinWarning(`Insufficient coins. You have ${availableCoins} coin${availableCoins === 1 ? "" : "s"}, but this test requires at least ${requestedQuestions}.`);
+        return;
+      }
+      setCoinWarning("");
       setCreatedTest(null);
       const result = await generateTest({
         images: pages.map((p) => p.file),
@@ -152,6 +163,7 @@ export default function GeneratePage() {
         mode: inputMode, questionCount,
       });
       setCreatedTest(result);
+      setCoinWarning("");
       fetchWallet();
       setPages([]);
       setTitle("");
@@ -389,6 +401,7 @@ export default function GeneratePage() {
           <p className="text-center text-xs text-base-content/40 mt-3">🪙 Cost is based on the content AptiGen identifies.</p>
 
           {error && <div className="alert alert-error text-sm mt-4">{error}</div>}
+          {coinWarning && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-100"><span>⚠️ {coinWarning}</span><button type="button" className="btn btn-sm border-0 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950" onClick={() => navigate("/buy-coins")}>Buy Coins →</button></div>}
         </form>
 
         {cameraStream && (

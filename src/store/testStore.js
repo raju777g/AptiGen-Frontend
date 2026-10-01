@@ -52,6 +52,24 @@ export const useTestStore = create((set, get) => ({
         set({ myTests: Array.isArray(data) ? data : [] });
     },
 
+    renameTest: async (testId, title) => {
+        await api.patch(`/tests/${testId}/rename`, { title });
+        const { data } = await api.get("/tests/mine");
+        set({ myTests: Array.isArray(data) ? data : [] });
+    },
+
+    copyTest: async (testId, folderId) => {
+        await api.post(`/tests/${testId}/copy`, { folderId });
+        const { data } = await api.get("/tests/mine");
+        set({ myTests: Array.isArray(data) ? data : [] });
+    },
+
+    copyTestFolder: async (folderId, parentId) => {
+        await api.post(`/tests/folders/${folderId}/copy`, { parentId });
+        const { data } = await api.get("/tests/folders");
+        set({ testFolders: Array.isArray(data) ? data : [] });
+    },
+
     generateTest: async ({ images, title, timerMode, secondsPerQuestion, mode, questionCount }) => {
         set({ isGenerating: true, error: null });
         try {

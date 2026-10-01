@@ -1,23 +1,26 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { useUiStore } from "../store/uiStore";
+import { useAuthStore } from "../store/authStore";
 import logoMark from "../assets/logo-mark.png";
 import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
-import iconDashboard from "../assets/icon-dashboard.png"; // add this one if you have a dashboard-specific icon, else reuse an existing one
+import iconDashboard from "../assets/icon-dashboard.png";
 import iconGenerate from "../assets/icon-generate.png";
-import iconMyTests from "../assets/icon-mytests.png"; // same — add or reuse
+import iconMyTests from "../assets/icon-mytests.png";
 import iconPractice from "../assets/icon-practice.png";
 import iconContests from "../assets/icon-contests.png";
 import iconSkillRadar from "../assets/icon-skillradar.png";
 // import iconRefer from "../assets/icon-refer.png";
 import iconCoins from "../assets/icon-coins.png";
 import iconContactUs from "../assets/contactUs.png";
+import mockLogo from "../assets/myTestsLogos/mock-logo.png";
 
 const navItems = [
   { to: "/dashboard", icon: iconDashboard, label: "Dashboard" },
   { to: "/generate", icon: iconGenerate, label: "Generate Test" },
   { to: "/my-tests", icon: iconMyTests, label: "My Tests" },
   { to: "/practice", icon: iconPractice, label: "Practice Others" },
+  { to: "/mock-tests", icon: mockLogo, label: "Mock Tests" },
   { to: "/contests", icon: iconContests, label: "Contests" },
   { to: "/skill-radar", icon: iconSkillRadar, label: "Skill Radar" },
   // Referral program disabled for now.
@@ -28,10 +31,14 @@ const navItems = [
 
 export default function Sidebar() {
   const { sidebarOpen, closeSidebar } = useUiStore();
+  const user = useAuthStore((state) => state.user);
   const [quoteIndex, setQuoteIndex] = useState(-1);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [proToast, setProToast] = useState(false);
   const advanceQuote = () => setQuoteIndex((index) => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
+  const visibleNavItems = user?.role === "ADMIN"
+    ? [...navItems, { to: "/admin", icon: iconContests, label: "Add Contest" }, { to: "/admin/mock-tests", icon: mockLogo, label: "Add Mock Test" }]
+    : navItems;
 
   return (
     <>
@@ -48,7 +55,7 @@ export default function Sidebar() {
           <span>Apti<span>Gen</span></span>
         </button>
         <nav className="app-sidebar-nav flex flex-col gap-1">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

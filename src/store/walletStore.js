@@ -7,6 +7,7 @@ export const useWalletStore = create((set) => ({
   fetchWallet: async () => {
     const { data } = await api.get("/wallet");
     set({ balance: data.balance });
+    return data.balance;
   },
 
   createOrder: async (amountInr) => {
