@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const backend = env.VITE_API_PROXY_TARGET || 'https://joana-unrevertible-gail.ngrok-free.dev' || 'http://localhost:8080'
+  const backend = env.VITE_API_PROXY_TARGET || 'https://01a0f743-edb3-77f0-8a1f-771bffe3879d-8080.eur-1.aiven.app'
 
   return {
     plugins: [react(), tailwindcss()],

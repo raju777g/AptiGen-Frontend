@@ -6,19 +6,19 @@
 # first-party. Keep these rules before the SPA fallback below.
 [[redirects]]
   from = "/api/*"
-  to = "https://joana-unrevertible-gail.ngrok-free.dev/api/:splat"
+  to = "https://01a0f743-edb3-77f0-8a1f-771bffe3879d-8080.eur-1.aiven.app/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/oauth2/*"
-  to = "https://joana-unrevertible-gail.ngrok-free.dev/oauth2/:splat"
+  to = "https://01a0f743-edb3-77f0-8a1f-771bffe3879d-8080.eur-1.aiven.app/oauth2/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/login/oauth2/*"
-  to = "https://joana-unrevertible-gail.ngrok-free.dev/login/oauth2/:splat"
+  to = "https://01a0f743-edb3-77f0-8a1f-771bffe3879d-8080.eur-1.aiven.app/login/oauth2/:splat"
   status = 200
   force = true
 
