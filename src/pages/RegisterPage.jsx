@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { OAUTH_BASE_URL } from "../api/client";
 import regRobotImg from "../assets/reg-robot-img.png";
 import googleLogo from "../assets/google.png";
 import githubLogo from "../assets/github.png";
@@ -41,6 +40,7 @@ export default function RegisterPage() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [oauthNotice, setOauthNotice] = useState("");
   const register = useAuthStore((s) => s.register);
   const verifyEmail = useAuthStore((s) => s.verifyEmail);
   const resendVerificationCode = useAuthStore((s) => s.resendVerificationCode);
@@ -363,13 +363,14 @@ export default function RegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <a href={`${OAUTH_BASE_URL}/oauth2/authorization/google`} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
+                <button type="button" onClick={() => setOauthNotice("Google and GitHub registration are coming soon. For now, please register using your email and password.")} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
                   <img src={googleLogo} alt="" className="w-5 h-5" /> Google
-                </a>
-                <a href={`${OAUTH_BASE_URL}/oauth2/authorization/github`} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
+                </button>
+                <button type="button" onClick={() => setOauthNotice("Google and GitHub registration are coming soon. For now, please register using your email and password.")} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
                   <img src={githubLogo} alt="" className="w-5 h-5" /> GitHub
-                </a>
+                </button>
               </div>
+              {oauthNotice && <p role="status" className="mt-3 text-center text-sm text-amber-200">{oauthNotice}</p>}
 
               <p className="text-center text-white/50 text-sm mt-6">
                 Already have an account?{" "}

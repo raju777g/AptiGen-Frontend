@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import logoFull from "../assets/logo-full.png";
+import logoMark from "../assets/logo-mark.png";
 import heroRobot from "../assets/hero-robot.png";
 import robotSmall from "../assets/robot-small.png";
 import iconPractice from "../assets/icon-practice.png";
@@ -8,6 +8,15 @@ import iconEarn from "../assets/icon-earn.png";
 import iconStreak from "../assets/icon-streak.png";
 import iconCashback from "../assets/icon-cashback.png";
 import iconContests from "../assets/icon-contests.png";
+import supportIcon from "../assets/socials/support.png";
+import contactIcon from "../assets/socials/contact-us.png";
+import faqIcon from "../assets/socials/faq.png";
+import pricingIcon from "../assets/socials/pricing.png";
+import mailIcon from "../assets/socials/mail.png";
+import linkedinIcon from "../assets/socials/linkedin.png";
+import githubIcon from "../assets/socials/github.png";
+import instagramIcon from "../assets/socials/instagram.png";
+import studentsImage from "../assets/socials/students.png";
 // import iconRefer from "../assets/icon-refer.png";
 
 function DemoTestCard() {
@@ -73,14 +82,41 @@ function DemoTestCard() {
 }
 
 export default function LandingPage() {
+    const [bursts, setBursts] = useState([]);
+    const [pointer, setPointer] = useState(null);
+    const [activeModal, setActiveModal] = useState(null);
+
+    const handleLandingClick = (event) => {
+        const burst = { id: `${Date.now()}-${Math.random()}`, x: event.clientX, y: event.clientY };
+        setBursts((current) => [...current.slice(-5), burst]);
+        window.setTimeout(() => setBursts((current) => current.filter((item) => item.id !== burst.id)), 950);
+    };
+
     return (
-        <div className="min-h-screen" style={{ background: "var(--hero-bg)" }}>
+        <div
+            className="landing-page min-h-screen"
+            style={{ background: "var(--hero-bg)" }}
+            onClick={handleLandingClick}
+            onPointerMove={(event) => setPointer({ x: event.clientX, y: event.clientY })}
+            onPointerLeave={() => setPointer(null)}
+        >
+            <div className="landing-effects" aria-hidden="true">
+                {pointer && <div className="landing-ripple" style={{ left: pointer.x, top: pointer.y }}><span /><span /><span /></div>}
+                {bursts.map((burst) => (
+                    <div key={burst.id} className="star-burst" style={{ left: burst.x, top: burst.y }}>
+                        {Array.from({ length: 12 }, (_, index) => (
+                            <span key={index} style={{ "--star-angle": `${index * 30}deg`, "--star-distance": `${42 + (index % 3) * 18}px` }}>✦</span>
+                        ))}
+                    </div>
+                ))}
+            </div>
             {/* Nav */}
-            <div style={{ background: "var(--hero-bg)" }} className="relative overflow-hidden">
+            <div style={{ background: "var(--hero-bg)" }} className="landing-hero-shell relative overflow-hidden">
                 {/* Nav */}
                 <nav className="flex items-center justify-between px-6 lg:px-12 py-5 relative z-10">
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">🧠</span>
+                        <img src={logoMark} alt="AptiGen logo" className="landing-logo-mark" />
                         <span className="font-hero font-bold text-xl text-white">AptiGen</span>
                     </div>
                     <div className="hidden lg:flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-1.5 py-1.5">
@@ -293,7 +329,7 @@ export default function LandingPage() {
             </section>
 
             {/* Final CTA */}
-            <section className="px-6 lg:px-12 py-16 bg-base-200">
+            <section className="landing-final-cta px-6 lg:px-12 py-16 bg-base-200">
                 <div
                     className="relative max-w-5xl mx-auto rounded-3xl px-8 py-14 text-center overflow-hidden"
                     style={{ background: "linear-gradient(135deg, #1A1042, #3B1F6B)" }}
@@ -338,8 +374,90 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            <footer className="px-6 lg:px-12 py-6 text-center text-xs text-base-content/40 bg-base-200">
+            <section className="landing-support-bar px-6 lg:px-12 py-12">
+                <div className="landing-support-inner max-w-6xl mx-auto">
+                    <div className="landing-support-column">
+                        <div className="landing-support-heading">
+                            <img src={supportIcon} alt="" />
+                            <div><h2>Help &amp; Support</h2><p>We&apos;re here to help you on your AptiGen journey.</p></div>
+                        </div>
+                        <div className="landing-support-actions">
+                            <a className="landing-support-card" href="https://mail.google.com/mail/?view=cm&fs=1&to=rajugarain64@gmail.com&su=AptiGen%20Support" target="_blank" rel="noreferrer">
+                                <img src={contactIcon} alt="" /><span><b>Contact Us</b><small>Have a question or need help?<br />Send us an email anytime.</small></span><strong>→</strong>
+                            </a>
+                            <button type="button" className="landing-support-card" onClick={() => setActiveModal("faq")}>
+                                <img src={faqIcon} alt="" /><span><b>FAQs</b><small>Find answers to common questions<br />about AptiGen.</small></span><strong>→</strong>
+                            </button>
+                            <button type="button" className="landing-support-card" onClick={() => setActiveModal("pricing")}>
+                                <img src={pricingIcon} alt="" /><span><b>Pricing</b><small>View coin packages, pricing details<br />and why we charge.</small></span><strong>→</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="landing-social-column">
+                        <div className="landing-support-heading">
+                            <div className="landing-social-heading-icon">↗</div>
+                            <div><h2>Socials</h2><p>Connect with us and be part of our community.</p></div>
+                        </div>
+                        <div className="landing-social-grid">
+                            {[
+                                { label: "Email", note: "Drop us a mail", href: "https://mail.google.com/mail/?view=cm&fs=1&to=rajugarain64@gmail.com", icon: mailIcon },
+                                { label: "LinkedIn", note: "Let's connect", href: "https://www.linkedin.com/in/raju-garain-581873290", icon: linkedinIcon },
+                                { label: "GitHub", note: "Check our code", href: "https://github.com/raju777g", icon: githubIcon },
+                                { label: "Instagram", note: "Follow us", href: "https://www.instagram.com/raj_coder7", icon: instagramIcon },
+                            ].map((social) => (
+                                <a key={social.label} className="landing-social-link" href={social.href} target="_blank" rel="noreferrer">
+                                    <span><img src={social.icon} alt={`${social.label} logo`} /></span>
+                                    <b>{social.label}</b><small>{social.note} ↗</small>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="landing-support-quote">
+                        <span>“</span>
+                        <div><p>&quot;Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.&quot;</p><small>— Dr. A.P.J. Abdul Kalam</small></div>
+                    </div>
+                    <img className="landing-support-art" src={studentsImage} alt="Students learning together" />
+                </div>
+            </section>
+
+            {activeModal && (
+                <div className="landing-info-modal" role="dialog" aria-modal="true" onClick={(event) => event.target === event.currentTarget && setActiveModal(null)}>
+                    <div className="landing-info-modal-card">
+                        <button type="button" className="landing-modal-close" aria-label="Close" onClick={() => setActiveModal(null)}>×</button>
+                        {activeModal === "faq" ? (
+                            <>
+                                <p className="landing-modal-kicker">APTIGEN HELP CENTER</p>
+                                <h2>Frequently asked questions</h2>
+                                <div className="landing-faq-list">
+                                    <details open><summary>What is AptiGen?</summary><p>AptiGen turns your study material into practice tests and helps you track progress by topic.</p></details>
+                                    <details><summary>How does test generation work?</summary><p>Upload a clear image or document. Our AI extracts the questions and creates a quiz for you.</p></details>
+                                    <details><summary>What are AG coins used for?</summary><p>Coins are used for generated and community practice tests. You can earn bonus coins through signup, streaks, contests, and publishing tests.</p></details>
+                                    <details><summary>Can I get coins back?</summary><p>Score 100% on an eligible paid test and AptiGen returns 50% of the coins spent as cashback.</p></details>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="landing-modal-kicker">SIMPLE, FAIR PRICING</p>
+                                <h2>AG coin packages</h2>
+                                <p className="landing-modal-copy">Every ₹1 gives you 10 AG coins.</p>
+                                <div className="landing-pricing-table">
+                                    <div><b>₹10</b><span>100 coins</span><small>Perfect for getting started</small></div>
+                                    <div><b>₹50</b><span>500 coins</span><small>Great for regular practice</small></div>
+                                    <div><b>₹100</b><span>1,000 coins</span><small>More tests, better progress</small></div>
+                                    <div><b>₹500</b><span>5,000 coins</span><small>For serious learners</small></div>
+                                </div>
+                                <p className="landing-modal-copy">These charges help us cover AI/API usage, secure cloud storage, servers, payment processing, and ongoing platform maintenance. You also receive 50 free AG coins after verifying your email.</p>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <footer className="landing-footer-legal px-6 lg:px-12 py-5 text-xs">
                 © 2026 AptiGen
+                <span>© 2026 AptiGen. <em>All rights reserved.</em></span>
+                <span className="landing-footer-links"><a href="#">Terms of Service</a><i /> <a href="#">Privacy Policy</a><i /> <a href="#">Refund Policy</a></span>
             </footer>
         </div>
     );

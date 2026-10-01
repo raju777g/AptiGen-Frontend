@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { OAUTH_BASE_URL } from "../api/client";
 import regRobotImg from "../assets/reg-robot-img.png";
 import googleLogo from "../assets/google.png";
 import githubLogo from "../assets/github.png";
@@ -18,6 +17,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const submittingRef = useRef(false);
   const [error, setError] = useState("");
+  const [oauthNotice, setOauthNotice] = useState("");
   const login = useAuthStore((s) => s.login);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
@@ -193,13 +193,14 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <a href={`${OAUTH_BASE_URL}/oauth2/authorization/google`} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
+            <button type="button" onClick={() => setOauthNotice("Google and GitHub login are coming soon. For now, please log in using your email and password.")} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
               <img src={googleLogo} alt="" className="w-5 h-5" /> Google
-            </a>
-            <a href={`${OAUTH_BASE_URL}/oauth2/authorization/github`} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
+            </button>
+            <button type="button" onClick={() => setOauthNotice("Google and GitHub login are coming soon. For now, please log in using your email and password.")} className="btn bg-white/5 text-white border-white/15 hover:bg-white/10 gap-2">
               <img src={githubLogo} alt="" className="w-5 h-5" /> GitHub
-            </a>
+            </button>
           </div>
+          {oauthNotice && <p role="status" className="mt-3 text-center text-sm text-amber-200">{oauthNotice}</p>}
         </div>
       </div>
     </div>
