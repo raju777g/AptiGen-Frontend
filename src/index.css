@@ -1328,9 +1328,11 @@
    .pro-coming-soon-toast { animation: pro-toast-in .42s cubic-bezier(.2,.8,.2,1) both, pro-toast-glow 1.8s ease-in-out .42s infinite alternate; }
    @keyframes pro-toast-in { from { opacity: 0; transform: translate(-50%, 16px) scale(.94); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
    @keyframes pro-toast-glow { to { box-shadow: 0 0 36px rgba(217,70,239,.42); } }
+   .free-practice-notice { animation: free-practice-pop .42s cubic-bezier(.2,.8,.2,1) both; }
+   @keyframes free-practice-pop { from { opacity: 0; transform: translateY(-14px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
    .folder-card-floating-menu { animation: folder-menu-pop .14s ease-out both; }
    @keyframes folder-menu-pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-   @media (prefers-reduced-motion: reduce) { .practice-test-card, .practice-test-card::before, .pro-coming-soon-toast, .folder-card-floating-menu { animation: none !important; } }
+   @media (prefers-reduced-motion: reduce) { .practice-test-card, .practice-test-card::before, .pro-coming-soon-toast, .free-practice-notice, .folder-card-floating-menu { animation: none !important; } }
    .my-tests-folder-crumb {
        position: relative;
        display: inline-flex;

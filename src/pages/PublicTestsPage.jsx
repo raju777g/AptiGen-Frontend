@@ -53,6 +53,7 @@
      const [search, setSearch] = useState("");
      const [sort, setSort] = useState("LATEST");
      const [selectedTest, setSelectedTest] = useState(null);
+     const [showFreePracticeNotice, setShowFreePracticeNotice] = useState(true);
      const [visibleCount, setVisibleCount] = useState(4);
      const navigate = useNavigate();
 
@@ -89,6 +90,23 @@
 
      return (
        <div>
+         {showFreePracticeNotice && (
+           <div className="free-practice-notice fixed inset-x-4 top-5 z-[60] mx-auto max-w-md sm:inset-x-auto" role="status" aria-label="Free practice notice">
+             <div className="relative overflow-hidden rounded-3xl border border-violet-200/60 bg-gradient-to-br from-white via-violet-50 to-fuchsia-50 p-5 text-slate-800 shadow-2xl shadow-violet-900/25 dark:border-violet-300/25 dark:from-[#1d1742] dark:via-[#21164b] dark:to-[#321443] dark:text-white">
+               <div className="pointer-events-none absolute -right-8 -top-10 text-7xl opacity-20" aria-hidden="true">&#10024;</div>
+               <button type="button" className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-lg text-slate-500 transition hover:bg-violet-200/60 hover:text-slate-800 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white" onClick={() => setShowFreePracticeNotice(false)} aria-label="Close free practice notice">&#215;</button>
+               <div className="relative flex items-start gap-3 pr-7">
+                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-2xl shadow-lg shadow-violet-500/25" aria-hidden="true">&#127873;</div>
+                 <div>
+                   <p className="font-hero text-lg font-extrabold">Good news, learner!</p>
+                   <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-violet-100">Currently all tests are free in this section. Keep practicing &amp; improving.</p>
+                 </div>
+               </div>
+               <button type="button" className="relative mt-4 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-2 text-sm font-bold text-white shadow-md shadow-violet-500/25 transition hover:-translate-y-0.5 hover:brightness-110" onClick={() => setShowFreePracticeNotice(false)}>Let&apos;s practice <span className="ml-1">&#8594;</span></button>
+             </div>
+           </div>
+         )}
+
          {/* Header */}
          <div className="relative rounded-2xl overflow-hidden mb-6 p-6 lg:p-8" style={{ background: "var(--hero-bg)" }}>
            <div className="relative z-10 flex items-center justify-between gap-6">
