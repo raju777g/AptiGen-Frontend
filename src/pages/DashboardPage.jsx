@@ -1,4 +1,4 @@
-   import { useEffect } from "react";
+   import { useEffect, useState } from "react";
    import { Link } from "react-router-dom";
    import { useAuthStore } from "../store/authStore";
    import { useWalletStore } from "../store/walletStore";
@@ -30,6 +30,26 @@
      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
      return `${Math.floor(diff / 86400)}d ago`;
+   }
+
+   const transactionCopy = {
+     SIGNUP_BONUS: { title: "Welcome bonus", place: "Added to your wallet", icon: "🎁" },
+     PURCHASE: { title: "Coins purchased", place: "Added to your wallet", icon: "💳" },
+     MCQ_GENERATION: { title: "Test generated", place: "AI test generation", icon: "✨" },
+     TEST_ATTEMPT_PAID: { title: "Practice test", place: "Test attempt", icon: "📝" },
+     ROYALTY_EARNED: { title: "Creator reward", place: "Test royalty", icon: "💎" },
+     STREAK_BONUS: { title: "Streak reward", place: "Daily check-in", icon: "🔥" },
+     ACCURACY_CASHBACK: { title: "Perfect-score cashback", place: "Test cashback", icon: "↩️" },
+     REFERRAL_BONUS: { title: "Referral reward", place: "Referral bonus", icon: "🤝" },
+     CONTEST_ENTRY: { title: "Contest entry", place: "Weekly contest", icon: "🏆" },
+     CONTEST_PRIZE: { title: "Contest prize", place: "Weekly contest reward", icon: "🏅" },
+     CONTEST_REFUND: { title: "Contest refund", place: "Returned to your wallet", icon: "↩️" },
+   };
+
+   function transactionDetails(transaction) {
+     const copy = transactionCopy[transaction.type] || { title: "Coin transaction", place: "Wallet activity", icon: "🪙" };
+     const reference = transaction.referenceId ? ` · Ref #${transaction.referenceId}` : "";
+     return { ...copy, place: `${copy.place}${reference}` };
    }
 
    function StatCard({ icon, value, label, color }) {
@@ -98,17 +118,26 @@
    export default function DashboardPage() {
      const user = useAuthStore((s) => s.user);
      const balance = useWalletStore((s) => s.balance);
+     const transactions = useWalletStore((s) => s.transactions);
+     const fetchWallet = useWalletStore((s) => s.fetchWallet);
      const { stats, fetchStats } = useDashboardStore();
-     const { personal, fetchAll } = useNotificationStore();
+     const { fetchAll } = useNotificationStore();
      const { myTests, fetchMyTests } = useTestStore();
+     const [transactionPage, setTransactionPage] = useState(0);
+     const transactionPageSize = 5;
+     const transactionPageCount = Math.max(1, Math.ceil(transactions.length / transactionPageSize));
+
+     useEffect(() => {
+       setTransactionPage((page) => Math.min(page, transactionPageCount - 1));
+     }, [transactions.length, transactionPageCount]);
 
      useEffect(() => {
        fetchStats();
+       fetchWallet();
        fetchAll();
        fetchMyTests();
      }, []);
 
-     const recentActivity = personal.slice(0, 4);
      const weekStart = new Date();
      weekStart.setHours(0, 0, 0, 0);
      weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
@@ -210,31 +239,36 @@
            </div>
          </div>
 
-         {/* Recent Activity */}
+         {/* Coin activity */}
          <div onPointerMove={moveSpotlight} className="dashboard-section-card spotlight card shadow p-5 mb-6">
            <div className="flex items-center justify-between mb-3">
              <div className="flex items-center gap-2">
                <span className="text-lg">🕐</span>
-               <h2 className="font-hero font-semibold">Recent Activity</h2>
+               <div><h2 className="font-hero font-semibold">Coin activity</h2><p className="text-xs text-base-content/50">Every credit and where your AG coins were spent</p></div>
              </div>
-             <button className="btn btn-xs btn-ghost">View All →</button>
+             {transactionPageCount > 1 && <span className="text-xs text-base-content/50">Page {transactionPage + 1} of {transactionPageCount}</span>}
            </div>
-           {recentActivity.length === 0 ? (
-             <p className="text-sm text-base-content/40 text-center py-4">No activity yet — go generate your first test!</p>
+           {transactions.length === 0 ? (
+             <p className="text-sm text-base-content/40 text-center py-4">No coin transactions yet.</p>
            ) : (
              <div className="flex flex-col divide-y divide-base-200">
-               {recentActivity.map((n) => (
-               <div key={n.id} className="dashboard-activity-row flex items-center justify-between py-3">
-                 <div className="dashboard-activity-icon" aria-hidden="true">&#127873;</div>
+               {transactions.slice(transactionPage * transactionPageSize, (transactionPage + 1) * transactionPageSize).map((transaction) => (
+               <div key={transaction.id || `${transaction.type}-${transaction.createdAt}`} className="dashboard-activity-row flex items-center justify-between py-3" style={{ display: "grid", gridTemplateColumns: "2.8rem minmax(0, 1fr) auto", alignItems: "center" }}>
+                 <div className="dashboard-activity-icon" aria-hidden="true">{transactionDetails(transaction).icon}</div>
                  <div className="dashboard-activity-copy">
-                   <p className="text-sm font-medium">{n.title}</p>
-                   <p className="text-xs text-base-content/50">{n.message}</p>
+                   <p className="text-sm font-medium">{transactionDetails(transaction).title}</p>
+                   <p className="text-xs text-base-content/50">{transactionDetails(transaction).place} · {timeAgo(transaction.createdAt)}</p>
                    </div>
-                   <span className="text-xs text-base-content/40 whitespace-nowrap ml-3">{timeAgo(n.createdAt)}</span>
+                   <span className={`text-sm font-semibold whitespace-nowrap ml-3 ${Number(transaction.amount) < 0 ? "text-rose-300" : "text-emerald-300"}`}>{Number(transaction.amount) > 0 ? "+" : ""}{transaction.amount} AG</span>
                  </div>
                ))}
              </div>
            )}
+           {transactionPageCount > 1 && <div className="mt-4 flex items-center justify-between border-t border-base-200 pt-3">
+             <button type="button" className="btn btn-sm btn-ghost" disabled={transactionPage === 0} onClick={() => setTransactionPage((page) => Math.max(0, page - 1))}>← Previous</button>
+             <span className="text-xs text-base-content/50">Showing {transactionPage * transactionPageSize + 1}–{Math.min((transactionPage + 1) * transactionPageSize, transactions.length)} of {transactions.length}</span>
+             <button type="button" className="btn btn-sm btn-ghost" disabled={transactionPage >= transactionPageCount - 1} onClick={() => setTransactionPage((page) => Math.min(transactionPageCount - 1, page + 1))}>Next →</button>
+           </div>}
          </div>
 
          </div>
