@@ -153,7 +153,7 @@ export default function LandingPage() {
                             <Link to="/register" className="btn btn-lg text-white border-none bg-gradient-to-r from-indigo-500 to-purple-500">
                                 Get Started →
                             </Link>
-                            <a href="#how-it-works" className="btn btn-lg bg-white/5 text-white border-white/15 hover:bg-white/10">
+                            <a href="https://drive.google.com/drive/folders/1YyXNS569eSgayhmPqBVVGGC1gdl6XrQy" className="btn btn-lg bg-white/5 text-white border-white/15 hover:bg-white/10">
                                 ▶ Watch Demo
                             </a>
                         </div>
