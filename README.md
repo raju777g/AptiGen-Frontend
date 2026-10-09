@@ -4,6 +4,8 @@ AptiGen is an AI-powered aptitude mock test platform. Upload an image of aptitud
 
 This repository contains the **React frontend**. The backend is built with Spring Boot and Spring AI.
 
+**Backend repository:** _https://github.com/raju777g/AptiGen-Backend_
+
 **Live demo:** _https://aptigenai.netlify.app_
 
 ## Features
