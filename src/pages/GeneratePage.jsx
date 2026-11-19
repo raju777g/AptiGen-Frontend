@@ -172,6 +172,7 @@ export default function GeneratePage() {
   };
 
   const openCropEditor = (file, page = null, index = null) => {
+    setImagePreview(null);
     setCropRect({ x: 0, y: 0, width: 100, height: 100 });
     const url = URL.createObjectURL(file);
     const image = new Image();
@@ -431,7 +432,7 @@ export default function GeneratePage() {
               <div className="flex flex-wrap gap-3 mt-4">
                 {pages.map((page, i) => (
                   <div key={page.id || i} className="generate-file-preview relative h-20 w-20 shrink-0 group">
-                    <button type="button" onClick={() => openImagePreview(page, i)} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Preview page ${i + 1} at full size`}>
+                    <button type="button" onClick={() => openCropEditor(page.file, page, i)} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Edit page ${i + 1}`}>
                       <img src={page.previewUrl} alt={`Page ${i + 1}`} className="w-20 h-20 object-cover rounded-lg border border-base-300" />
                     </button>
                     <span className="absolute -top-2 -left-2 bg-primary text-primary-content text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
@@ -580,7 +581,7 @@ export default function GeneratePage() {
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><h2 className="font-semibold">Crop image</h2><p className="text-xs text-slate-400">Trim the edges before adding this page.</p></div><button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCropEditor} aria-label="Close crop editor">×</button></div>
           <div className="p-4 sm:p-5">
             <div ref={cropStageRef} style={cropEditor.width ? { aspectRatio: `${cropEditor.width} / ${cropEditor.height}` } : undefined} className="relative mx-auto max-h-[62vh] w-full max-w-2xl touch-none overflow-hidden rounded-xl bg-black" onPointerMove={moveCropInteraction} onPointerUp={endCropInteraction} onPointerCancel={endCropInteraction}>
-              <img src={cropEditor.url} alt="Crop preview" className={cropEditor.width ? "block h-full w-full object-contain" : "block max-h-[62vh] max-w-full object-contain"} onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} />
+              <img src={cropEditor.url} alt="Crop preview" className={cropEditor.width ? "block h-full w-full object-contain" : "block max-h-[62vh] max-w-full object-contain"} onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} onError={() => { setUploadError("Could not load this image for editing."); closeCropEditor(); }} />
               <div className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,.55)]" style={{ left: `${cropRect.x}%`, top: `${cropRect.y}%`, width: `${cropRect.width}%`, height: `${cropRect.height}%` }} onPointerDown={(event) => startCropInteraction("move", event)}>
                 <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3"><i className="border-r border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-r border-white/60" /><i className="border-r" /><i className="border-r" /><i className="border-r" /><i /></div>
                 {[["top-left", "-left-2 -top-2 cursor-nwse-resize"], ["top-right", "-right-2 -top-2 cursor-nesw-resize"], ["bottom-left", "-left-2 -bottom-2 cursor-nesw-resize"], ["bottom-right", "-right-2 -bottom-2 cursor-nwse-resize"]].map(([mode, classes]) => <button key={mode} type="button" aria-label={`Resize crop ${mode}`} className={`absolute h-5 w-5 rounded-full border-2 border-white bg-cyan-400 shadow ${classes}`} onPointerDown={(event) => startCropInteraction(mode, event)} />)}
