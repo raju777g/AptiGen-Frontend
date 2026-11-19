@@ -33,6 +33,7 @@ export default function Topbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMatchCount, setSearchMatchCount] = useState(0);
   const [searchIndex, setSearchIndex] = useState(0);
+  const [isAppFullscreen, setIsAppFullscreen] = useState(false);
   const searchInputRef = useRef(null);
   const searchMatchesRef = useRef([]);
 
@@ -79,6 +80,12 @@ export default function Topbar() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsAppFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   const moveSearch = (direction) => {
     if (!searchMatchesRef.current.length) return;
     const next = (searchIndex + direction + searchMatchesRef.current.length) % searchMatchesRef.current.length;
@@ -113,6 +120,15 @@ export default function Topbar() {
   const handleLogoClick = () => {
     setQuoteIndex((index) => Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length));
     setQuoteOpen(true);
+  };
+
+  const toggleAppFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      // Fullscreen can be blocked by the browser or unavailable in some embedded views.
+    }
   };
 
   return (
@@ -184,6 +200,12 @@ export default function Topbar() {
               </li>
               <li className="sm:hidden">
                 <ThemeToggle inline />
+              </li>
+              <li>
+                <button onClick={toggleAppFullscreen}>
+                  <span className="flex h-5 w-5 items-center justify-center text-lg leading-none">⛶</span>
+                  <span>{isAppFullscreen ? "Exit Full screen" : "Full screen"}</span>
+                </button>
               </li>
               <li>
                 <button onClick={() => setAvatarModalOpen(true)}>
