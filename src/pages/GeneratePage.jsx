@@ -25,7 +25,7 @@ export default function GeneratePage() {
   const [title, setTitle] = useState("");
   const [seconds, setSeconds] = useState(120);
 
-  const [inputMode, setInputMode] = useState("ENGLISH_PRINTED");
+  const [inputMode, setInputMode] = useState("HANDWRITTEN_OR_OTHER_LANGUAGE");
   const [questionCount, setQuestionCount] = useState(10);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
