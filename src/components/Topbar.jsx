@@ -13,6 +13,7 @@ import changePic from "../assets/avatars/change-pic.png";
 import resetPass from "../assets/avatars/reset-pass.png";
 import userLogout from "../assets/avatars/user-logout.png";
 import logoMark from "../assets/logo-mark.png";
+import streakAlertSound from "../assets/streak-alert.mp3";
 import MotivationalQuoteModal, { MOTIVATIONAL_QUOTES } from "./MotivationalQuoteModal";
 
 export default function Topbar() {
@@ -36,6 +37,7 @@ export default function Topbar() {
   const [isAppFullscreen, setIsAppFullscreen] = useState(false);
   const searchInputRef = useRef(null);
   const searchMatchesRef = useRef([]);
+  const streakAudioRef = useRef(null);
 
   useEffect(() => {
     const root = document.querySelector("main");
@@ -86,6 +88,17 @@ export default function Topbar() {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  useEffect(() => {
+    const audio = new Audio(streakAlertSound);
+    audio.preload = "auto";
+    streakAudioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      streakAudioRef.current = null;
+    };
+  }, []);
+
   const moveSearch = (direction) => {
     if (!searchMatchesRef.current.length) return;
     const next = (searchIndex + direction + searchMatchesRef.current.length) % searchMatchesRef.current.length;
@@ -108,7 +121,14 @@ export default function Topbar() {
   const handleCheckIn = async () => {
     const result = await checkIn();
     setCheckInResult(result);
-    if (!result.alreadyCheckedIn) fetchWallet();
+    if (!result.alreadyCheckedIn) {
+      const audio = streakAudioRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+      fetchWallet();
+    }
   };
 
   const handleConfirmLogout = async () => {

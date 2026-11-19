@@ -6,6 +6,7 @@ import coin10 from "../assets/buy-coins/coin-10rs.png";
 import coin50 from "../assets/buy-coins/coin-50rs.png";
 import coin100 from "../assets/buy-coins/coin-100rs.png";
 import coin500 from "../assets/buy-coins/coin-500rs.png";
+import successPurchaseSound from "../assets/success-purchase.mp3";
 
 const TIERS = [
   { amount: 10, coins: 100, img: coin10, badge: "Best Value", color: "#ec36be", copy: "Perfect for getting started" },
@@ -69,7 +70,7 @@ export default function BuyCoinsPage() {
       const razorpay = new window.Razorpay({
         key: order.keyId, amount: order.amount, currency: order.currency, order_id: order.orderId,
         name: "AptiGen", description: `${order.coinsToCredit} AG Coins`, theme: { color: "#7c3aed" },
-        handler: () => { if (attemptId !== paymentAttemptId.current) return; purchaseInProgress.current = false; setStatus("success"); pollWalletForUpdate(); },
+        handler: () => { if (attemptId !== paymentAttemptId.current) return; purchaseInProgress.current = false; setStatus("success"); const audio = new Audio(successPurchaseSound); audio.volume = 0.85; audio.play().catch(() => {}); pollWalletForUpdate(); },
         modal: { ondismiss: () => { if (attemptId !== paymentAttemptId.current) return; purchaseInProgress.current = false; setStatus(null); } },
       });
       razorpay.on("payment.failed", (response) => {

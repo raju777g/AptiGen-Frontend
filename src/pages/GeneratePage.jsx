@@ -7,6 +7,7 @@ import { useThemeStore } from "../store/themeStore";
 import cloudUploadIcon from "../assets/icon-cloud-upload.png";
 import imageFilesIcon from "../assets/image-files.png";
 import cameraIcon from "../assets/camera.png";
+import testCreatedVoiceAlert from "../assets/test-created-voice-alert.mp3";
 import GenerationOverlay from "../components/GenerationOverlay";
 
 const TIME_PRESETS = [30, 60, 120, 180, 300];
@@ -40,6 +41,7 @@ export default function GeneratePage() {
   const cameraInputRef = useRef(null);
   const cameraVideoRef = useRef(null);
   const cameraModalRef = useRef(null);
+  const successAudioRef = useRef(null);
   const cropStageRef = useRef(null);
   const cropDragRef = useRef(null);
 
@@ -49,6 +51,26 @@ export default function GeneratePage() {
   const fetchWallet = useWalletStore((s) => s.fetchWallet);
 
   useEffect(() => { fetchWallet().catch(() => {}); }, [fetchWallet]);
+
+  useEffect(() => {
+    const audio = new Audio(testCreatedVoiceAlert);
+    audio.preload = "auto";
+    successAudioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      successAudioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!createdTest || !successAudioRef.current) return;
+    const audio = successAudioRef.current;
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      // Some browsers require a direct user gesture before allowing audio playback.
+    });
+  }, [createdTest]);
 
   const addFiles = (fileList) => {
     const selectedFiles = Array.from(fileList);
@@ -166,19 +188,23 @@ export default function GeneratePage() {
     canvas.toBlob((blob) => {
       if (!blob) return;
       const photo = new File([blob], `aptigen-${Date.now()}.jpg`, { type: "image/jpeg" });
+      addFiles([photo]);
       closeCamera();
-      openCropEditor(photo);
     }, "image/jpeg", 0.92);
   };
 
   const openCropEditor = (file, page = null, index = null) => {
+    if (!(file instanceof Blob)) {
+      setUploadError("This image cannot be edited. Please upload it again.");
+      return;
+    }
     setImagePreview(null);
     setCropRect({ x: 0, y: 0, width: 100, height: 100 });
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => setCropEditor((current) => current?.url === url ? { ...current, width: image.naturalWidth, height: image.naturalHeight } : current);
-    image.src = url;
-    setCropEditor({ file, url, page, index, width: 0, height: 0 });
+    try {
+      setCropEditor({ file, url: URL.createObjectURL(file), page, index, width: 4, height: 3 });
+    } catch {
+      setUploadError("This image cannot be edited. Please upload it again.");
+    }
   };
 
   const closeCropEditor = () => {
@@ -218,7 +244,7 @@ export default function GeneratePage() {
   };
 
   const applyCrop = () => {
-    if (!cropEditor) return;
+    if (!cropEditor?.file) return;
     const image = new Image();
     image.onload = () => {
       const { x, y, width, height } = cropRect;
@@ -244,6 +270,7 @@ export default function GeneratePage() {
         closeCropEditor();
       }, "image/jpeg", 0.92);
     };
+    image.onerror = () => setUploadError("Could not crop this image. Please try another image.");
     image.src = cropEditor.url;
   };
 
@@ -330,7 +357,7 @@ export default function GeneratePage() {
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Extraction source type">
             <button type="button" role="radio" aria-checked={inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE"} onClick={() => setInputMode("HANDWRITTEN_OR_OTHER_LANGUAGE")} className={`order-last rounded-xl border p-3 text-left transition ${inputMode === "HANDWRITTEN_OR_OTHER_LANGUAGE" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
-              <span className="block font-semibold">✍️ Handwritten / other language</span>
+              <span className="neon-spectrum-text block font-semibold">✍️ Handwritten / other language</span>
               <span className="mt-1 block text-xs text-base-content/60">Gemini reads the original images directly.</span>
             </button>
             <button type="button" role="radio" aria-checked={inputMode === "ENGLISH_PRINTED"} onClick={() => setInputMode("ENGLISH_PRINTED")} className={`order-first rounded-xl border p-3 text-left transition ${inputMode === "ENGLISH_PRINTED" ? "border-primary bg-primary/10 ring-2 ring-primary/20" : "border-base-300 hover:border-primary/50"}`}>
@@ -410,7 +437,7 @@ export default function GeneratePage() {
               />
               <input
                 ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropEditor(file); e.target.value = ""; }}
+                onChange={(e) => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ""; }}
               />
               <img src={cloudUploadIcon} alt="" className="w-16 h-16 mb-3" />
               <p className="font-semibold mb-1">
@@ -432,7 +459,7 @@ export default function GeneratePage() {
               <div className="flex flex-wrap gap-3 mt-4">
                 {pages.map((page, i) => (
                   <div key={page.id || i} className="generate-file-preview relative h-20 w-20 shrink-0 group">
-                    <button type="button" onClick={() => openCropEditor(page.file, page, i)} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Edit page ${i + 1}`}>
+                    <button type="button" onClick={() => openImagePreview(page, i)} className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label={`Preview page ${i + 1} at full size`}>
                       <img src={page.previewUrl} alt={`Page ${i + 1}`} className="w-20 h-20 object-cover rounded-lg border border-base-300" />
                     </button>
                     <span className="absolute -top-2 -left-2 bg-primary text-primary-content text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
@@ -580,8 +607,8 @@ export default function GeneratePage() {
         <section role="dialog" aria-modal="true" aria-label="Crop image" className="w-full max-w-3xl overflow-hidden rounded-2xl border border-cyan-300/25 bg-slate-900 text-white shadow-2xl">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><h2 className="font-semibold">Crop image</h2><p className="text-xs text-slate-400">Trim the edges before adding this page.</p></div><button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCropEditor} aria-label="Close crop editor">×</button></div>
           <div className="p-4 sm:p-5">
-            <div ref={cropStageRef} style={cropEditor.width ? { aspectRatio: `${cropEditor.width} / ${cropEditor.height}` } : undefined} className="relative mx-auto max-h-[62vh] w-full max-w-2xl touch-none overflow-hidden rounded-xl bg-black" onPointerMove={moveCropInteraction} onPointerUp={endCropInteraction} onPointerCancel={endCropInteraction}>
-              <img src={cropEditor.url} alt="Crop preview" className={cropEditor.width ? "block h-full w-full object-contain" : "block max-h-[62vh] max-w-full object-contain"} onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} onError={() => { setUploadError("Could not load this image for editing."); closeCropEditor(); }} />
+            <div ref={cropStageRef} style={cropEditor.width ? { aspectRatio: `${cropEditor.width} / ${cropEditor.height}` } : undefined} className="relative mx-auto aspect-[4/3] max-h-[62vh] w-full max-w-2xl touch-none overflow-hidden rounded-xl bg-black" onPointerMove={moveCropInteraction} onPointerUp={endCropInteraction} onPointerCancel={endCropInteraction}>
+              <img src={cropEditor.url} alt="Crop preview" className="block h-full w-full object-contain" onLoad={(event) => { const { naturalWidth, naturalHeight } = event.currentTarget; setCropEditor((current) => current ? { ...current, width: naturalWidth, height: naturalHeight } : current); }} onError={() => { setUploadError("Could not load this image for editing."); closeCropEditor(); }} />
               <div className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,.55)]" style={{ left: `${cropRect.x}%`, top: `${cropRect.y}%`, width: `${cropRect.width}%`, height: `${cropRect.height}%` }} onPointerDown={(event) => startCropInteraction("move", event)}>
                 <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3"><i className="border-r border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-r border-white/60" /><i className="border-r" /><i className="border-r" /><i className="border-r" /><i /></div>
                 {[["top-left", "-left-2 -top-2 cursor-nwse-resize"], ["top-right", "-right-2 -top-2 cursor-nesw-resize"], ["bottom-left", "-left-2 -bottom-2 cursor-nesw-resize"], ["bottom-right", "-right-2 -bottom-2 cursor-nwse-resize"]].map(([mode, classes]) => <button key={mode} type="button" aria-label={`Resize crop ${mode}`} className={`absolute h-5 w-5 rounded-full border-2 border-white bg-cyan-400 shadow ${classes}`} onPointerDown={(event) => startCropInteraction(mode, event)} />)}

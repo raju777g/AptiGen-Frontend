@@ -598,10 +598,27 @@
        100% { transform: scale(1); }
    }
 
+   .neon-spectrum-text {
+       display: inline-block;
+       color: #fff;
+       background: linear-gradient(90deg, #ff3b81, #ff9f43, #ffe66d, #45f0a0, #42d9ff, #7c83ff, #e879f9, #ff3b81);
+       background-size: 300% auto;
+       -webkit-background-clip: text;
+       background-clip: text;
+       -webkit-text-fill-color: transparent;
+       text-shadow: 0 0 7px rgba(255, 79, 193, .28), 0 0 18px rgba(73, 211, 255, .2);
+       animation: neon-spectrum-shift 5s linear infinite;
+   }
+   @keyframes neon-spectrum-shift { to { background-position: 300% center; } }
+
    .generate-dropzone {
        position: relative;
        isolation: isolate;
        overflow: hidden;
+       background-image: linear-gradient(rgba(15, 23, 42, .82), rgba(15, 23, 42, .82)), url("./assets/gen-test.png");
+       background-size: cover;
+       background-position: center;
+       background-blend-mode: normal;
    }
 
    .generate-dropzone::before {

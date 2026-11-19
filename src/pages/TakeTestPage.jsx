@@ -10,6 +10,7 @@ import rainFocusMusic from "../assets/bg-music/milagrosgomez-dark-atmosphere-wit
 import forestFocusMusic from "../assets/bg-music/the_mountain-forest-163871.mp3";
 import mountainCalmMusic from "../assets/bg-music/velariomusic-peaceful-582874.mp3";
 import celticForestMusic from "../assets/bg-music/vjgalaxy-mystical-celtic-forest-ambience-05-560012.mp3";
+import tabsSwitchAlertSound from "../assets/tabs-switch-alert.mp3";
 
 const focusTracks = [
   { name: "Rain Focus", mood: "Soft rain ambience", src: rainFocusMusic },
@@ -130,7 +131,19 @@ export default function TakeTestPage() {
   const deadlineRef = useRef(null);
   const tabSwitchCountRef = useRef(0);
   const hasStartedRef = useRef(false);
+  const tabsSwitchAudioRef = useRef(null);
   answersRef.current = answers;
+
+  useEffect(() => {
+    const audio = new Audio(tabsSwitchAlertSound);
+    audio.preload = "auto";
+    tabsSwitchAudioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      tabsSwitchAudioRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (hasStartedRef.current) return;
@@ -179,7 +192,7 @@ export default function TakeTestPage() {
       submittedRef.current = true;
       clearActiveTestDraft(user);
       fetchWallet();
-      navigate("/results", { state: data });
+      navigate("/results", { state: { ...data, playCompletionSound: true } });
     } catch (err) {
       setError(err.response?.data?.message || "Could not submit your test. Please try again.");
       submittingRef.current = false;
@@ -227,6 +240,11 @@ export default function TakeTestPage() {
       tabSwitchCountRef.current = nextCount;
       setTabSwitches(nextCount);
       setSecurityWarning(true);
+      const audio = tabsSwitchAudioRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
       if (nextCount >= 3) handleSubmit();
     };
     document.addEventListener("visibilitychange", onTabVisibilityChange);

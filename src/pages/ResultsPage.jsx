@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import testDoneSound from "../assets/test-done.mp3";
 
 const options = ["A", "B", "C", "D"];
 
@@ -7,6 +8,17 @@ export default function ResultsPage() {
   const { state } = useLocation();
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [revealedQuestions] = useState(() => state?.reviewQuestions || []);
+
+  useEffect(() => {
+    if (!state?.playCompletionSound) return undefined;
+    const audio = new Audio(testDoneSound);
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+    return () => {
+      audio.pause();
+      audio.src = "";
+    };
+  }, [state?.playCompletionSound]);
 
   if (!state) {
     return <div className="mx-auto mt-10 max-w-md text-center"><p>No results to show.</p><Link to="/my-tests" className="btn btn-primary mt-4">Back to My Tests</Link></div>;
