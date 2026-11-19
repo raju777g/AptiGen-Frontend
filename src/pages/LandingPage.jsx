@@ -19,6 +19,28 @@ import instagramIcon from "../assets/socials/instagram.png";
 import studentsImage from "../assets/socials/students.png";
 // import iconRefer from "../assets/icon-refer.png";
 
+const emailRecipient = "rajugarain64@gmail.com";
+const emailSubject = "Query about AptiGen";
+const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailRecipient)}&su=${encodeURIComponent(emailSubject)}`;
+
+function handleEmailClick(event) {
+    if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
+
+    event.preventDefault();
+    const gmailAppUrl = `googlegmail://co?to=${encodeURIComponent(emailRecipient)}&subject=${encodeURIComponent(emailSubject)}`;
+    let fallbackTimer;
+    const handleVisibilityChange = () => {
+        if (document.hidden) clearTimeout(fallbackTimer);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange, { once: true });
+    fallbackTimer = setTimeout(() => {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        if (!document.hidden) window.location.assign(gmailWebUrl);
+    }, 1200);
+    window.location.assign(gmailAppUrl);
+}
+
 function DemoTestCard() {
     const [seconds, setSeconds] = useState(47);
     const [selected, setSelected] = useState("O(log n)");
@@ -382,7 +404,7 @@ export default function LandingPage() {
                             <div><h2>Help &amp; Support</h2><p>We&apos;re here to help you on your AptiGen journey.</p></div>
                         </div>
                         <div className="landing-support-actions">
-                            <a className="landing-support-card" href="https://mail.google.com/mail/?view=cm&fs=1&to=rajugarain64@gmail.com&su=AptiGen%20Support" target="_blank" rel="noreferrer">
+                            <a className="landing-support-card" href={gmailWebUrl} onClick={handleEmailClick} target="_blank" rel="noreferrer">
                                 <img src={contactIcon} alt="" /><span><b>Contact Us</b><small>Have a question or need help?<br />Send us an email anytime.</small></span><strong>→</strong>
                             </a>
                             <button type="button" className="landing-support-card" onClick={() => setActiveModal("faq")}>
@@ -401,12 +423,12 @@ export default function LandingPage() {
                         </div>
                         <div className="landing-social-grid">
                             {[
-                                { label: "Email", note: "Drop us a mail", href: "https://mail.google.com/mail/?view=cm&fs=1&to=rajugarain64@gmail.com", icon: mailIcon },
+                                { label: "Email", note: "Drop us a mail", href: gmailWebUrl, icon: mailIcon },
                                 { label: "LinkedIn", note: "Let's connect", href: "https://www.linkedin.com/in/raju-garain-581873290", icon: linkedinIcon },
                                 { label: "GitHub", note: "Check our code", href: "https://github.com/raju777g", icon: githubIcon },
                                 { label: "Instagram", note: "Follow us", href: "https://www.instagram.com/raj_coder7", icon: instagramIcon },
                             ].map((social) => (
-                                <a key={social.label} className="landing-social-link" href={social.href} target="_blank" rel="noreferrer">
+                                <a key={social.label} className="landing-social-link" href={social.href} onClick={social.label === "Email" ? handleEmailClick : undefined} target="_blank" rel="noreferrer">
                                     <span><img src={social.icon} alt={`${social.label} logo`} /></span>
                                     <b>{social.label}</b><small>{social.note} ↗</small>
                                 </a>

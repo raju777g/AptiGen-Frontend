@@ -326,7 +326,7 @@ export default function GeneratePage() {
                     </span>
                     <button
                       type="button" onClick={() => removePage(i)}
-                      className="absolute right-1 top-1 z-20 bg-error text-error-content text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg opacity-100 transition-opacity"
+                      className="generate-file-remove absolute z-20 bg-error text-error-content text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg opacity-100 transition-opacity"
                       aria-label={`Remove page ${i + 1}`}
                     >
                       ✕

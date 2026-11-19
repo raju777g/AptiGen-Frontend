@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { api } from "../api/client";
-import { compressImageIfNeeded } from "../utils/compressImage";
+import { compressProfileImage } from "../utils/compressImage";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -57,7 +57,7 @@ export const useAuthStore = create((set) => ({
   },
 
   uploadAvatar: async (file) => {
-    const uploadFile = await compressImageIfNeeded(file);
+    const uploadFile = await compressProfileImage(file);
     const formData = new FormData();
     formData.append("file", uploadFile);
     const { data } = await api.post("/users/me/avatar/upload", formData, {

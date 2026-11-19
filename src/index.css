@@ -641,8 +641,18 @@
    }
 
    .generate-file-preview {
+       position: relative !important;
        animation: generate-preview-in .3s ease-out both;
        transition: transform .2s ease;
+   }
+
+   .generate-file-remove {
+       position: absolute !important;
+       top: .25rem !important;
+       right: .25rem !important;
+       left: auto !important;
+       bottom: auto !important;
+       z-index: 20 !important;
    }
 
    .generate-file-preview:hover {
