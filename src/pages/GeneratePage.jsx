@@ -28,6 +28,10 @@ export default function GeneratePage() {
   const [questionCount, setQuestionCount] = useState(10);
   const [cameraStream, setCameraStream] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [cropEditor, setCropEditor] = useState(null);
+  const [cropValues, setCropValues] = useState({ top: 0, right: 0, bottom: 0, left: 0 });
   const [uploadError, setUploadError] = useState("");
   const [coinWarning, setCoinWarning] = useState("");
 
@@ -97,13 +101,28 @@ export default function GeneratePage() {
         video: { facingMode: { ideal: "environment" } },
       });
       setCameraReady(false);
+      const videoTrack = stream.getVideoTracks()[0];
+      setTorchSupported(Boolean(videoTrack?.getCapabilities?.().torch));
+      setTorchEnabled(false);
       setCameraStream(stream);
     } catch {
       cameraInputRef.current?.click();
     }
   };
 
-  const closeCamera = () => { setCameraReady(false); setCameraStream(null); };
+  const closeCamera = () => { setCameraReady(false); setTorchEnabled(false); setTorchSupported(false); setCameraStream(null); };
+
+  const toggleTorch = async () => {
+    const track = cameraStream?.getVideoTracks?.()[0];
+    if (!track || !torchSupported) return;
+    try {
+      const next = !torchEnabled;
+      await track.applyConstraints({ advanced: [{ torch: next }] });
+      setTorchEnabled(next);
+    } catch {
+      setUploadError("Camera lighting is not available on this device.");
+    }
+  };
 
   useEffect(() => {
     if (!cameraStream) return undefined;
@@ -128,9 +147,60 @@ export default function GeneratePage() {
     canvas.toBlob((blob) => {
       if (!blob) return;
       const photo = new File([blob], `aptigen-${Date.now()}.jpg`, { type: "image/jpeg" });
-      addFiles([photo]);
       closeCamera();
+      openCropEditor(photo);
     }, "image/jpeg", 0.92);
+  };
+
+  const openCropEditor = (file, page = null, index = null) => {
+    setCropValues({ top: 0, right: 0, bottom: 0, left: 0 });
+    setCropEditor({ file, url: URL.createObjectURL(file), page, index });
+  };
+
+  const closeCropEditor = () => {
+    if (cropEditor?.url) URL.revokeObjectURL(cropEditor.url);
+    setCropEditor(null);
+  };
+
+  const updateCrop = (side, value) => {
+    const nextValue = Number(value);
+    setCropValues((current) => {
+      const next = { ...current, [side]: nextValue };
+      const vertical = next.top + next.bottom;
+      const horizontal = next.left + next.right;
+      if (vertical > 85 || horizontal > 85) return current;
+      return next;
+    });
+  };
+
+  const applyCrop = () => {
+    if (!cropEditor) return;
+    const image = new Image();
+    image.onload = () => {
+      const { top, right, bottom, left } = cropValues;
+      const sourceX = Math.round(image.naturalWidth * left / 100);
+      const sourceY = Math.round(image.naturalHeight * top / 100);
+      const sourceWidth = Math.max(1, Math.round(image.naturalWidth * (100 - left - right) / 100));
+      const sourceHeight = Math.max(1, Math.round(image.naturalHeight * (100 - top - bottom) / 100));
+      const canvas = document.createElement("canvas");
+      canvas.width = sourceWidth;
+      canvas.height = sourceHeight;
+      canvas.getContext("2d")?.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const cropped = new File([blob], cropEditor.file.name.replace(/\.[^.]+$/, "") + "-cropped.jpg", { type: "image/jpeg" });
+        if (cropEditor.page) {
+          const nextUrl = URL.createObjectURL(cropped);
+          setPages((current) => current.map((page, pageIndex) => pageIndex === cropEditor.index ? { ...page, file: cropped, previewUrl: nextUrl } : page));
+          if (cropEditor.page.previewUrl) URL.revokeObjectURL(cropEditor.page.previewUrl);
+          setImagePreview(null);
+        } else {
+          addFiles([cropped]);
+        }
+        closeCropEditor();
+      }, "image/jpeg", 0.92);
+    };
+    image.src = cropEditor.url;
   };
 
   const removePage = (index) => setPages((prev) => { const removed = prev[index]; if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl); return prev.filter((_, i) => i !== index); });
@@ -296,7 +366,7 @@ export default function GeneratePage() {
               />
               <input
                 ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropEditor(file); e.target.value = ""; }}
               />
               <img src={cloudUploadIcon} alt="" className="w-16 h-16 mb-3" />
               <p className="font-semibold mb-1">
@@ -417,7 +487,10 @@ export default function GeneratePage() {
               </div>
               <div className="flex items-center justify-between gap-3 p-4 sm:px-5">
                 <button type="button" className="btn btn-ghost text-white" onClick={() => { closeCamera(); openImagePicker(); }}>Choose from photos</button>
-                <button type="button" disabled={!cameraReady} className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 text-white" onClick={capturePhoto}>● &nbsp; Capture</button>
+                <div className="flex items-center gap-2">
+                  <button type="button" disabled={!torchSupported} className={`btn btn-sm ${torchEnabled ? "bg-amber-300 text-slate-950" : "btn-outline text-white"}`} onClick={toggleTorch} title={torchSupported ? "Toggle camera lighting" : "Camera lighting is not supported on this device"}>{torchEnabled ? "☀ Lighting on" : "☼ Lighting"}</button>
+                  <button type="button" disabled={!cameraReady} className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 text-white" onClick={capturePhoto}>● &nbsp; Capture</button>
+                </div>
               </div>
             </section>
           </div>
@@ -456,6 +529,14 @@ export default function GeneratePage() {
           <div className="generate-image-preview-stage max-h-[78vh] overflow-auto p-3 sm:p-5" onWheel={(event) => { if (!event.ctrlKey) return; event.preventDefault(); setPreviewZoom((zoom) => Math.min(4, Math.max(1, zoom + (event.deltaY < 0 ? .15 : -.15)))); }}>
             <img src={imagePreview.page.previewUrl} alt={`Full preview of page ${imagePreview.index + 1}`} style={previewZoom === 1 ? { maxWidth: "100%", maxHeight: "72vh", width: "auto" } : { width: `${previewZoom * 100}%`, maxWidth: "none", maxHeight: "none" }} className="mx-auto block rounded-lg object-contain transition-[width] duration-150" />
           </div>
+          <div className="flex justify-end border-t border-white/10 px-4 py-3"><button type="button" className="btn btn-sm border-0 bg-violet-600 text-white" onClick={() => openCropEditor(imagePreview.page.file, imagePreview.page, imagePreview.index)}>Crop image</button></div>
+        </section>
+      </div>, document.body)}
+      {cropEditor && createPortal(<div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-3 backdrop-blur-md sm:p-6">
+        <section role="dialog" aria-modal="true" aria-label="Crop image" className="w-full max-w-3xl overflow-hidden rounded-2xl border border-cyan-300/25 bg-slate-900 text-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><h2 className="font-semibold">Crop image</h2><p className="text-xs text-slate-400">Trim the edges before adding this page.</p></div><button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCropEditor} aria-label="Close crop editor">×</button></div>
+          <div className="grid gap-5 p-4 sm:grid-cols-[1fr_220px] sm:p-5"><div className="grid min-h-64 place-items-center overflow-hidden rounded-xl bg-black p-3"><img src={cropEditor.url} alt="Crop preview" className="max-h-[55vh] max-w-full object-contain" style={{ clipPath: `inset(${cropValues.top}% ${cropValues.right}% ${cropValues.bottom}% ${cropValues.left}%)` }} /></div><div className="space-y-4 text-sm">{[["top", "Top"], ["right", "Right"], ["bottom", "Bottom"], ["left", "Left"]].map(([side, label]) => <label key={side} className="block">{label}: {cropValues[side]}%<input type="range" min="0" max="80" value={cropValues[side]} onChange={(event) => updateCrop(side, event.target.value)} className="range range-xs range-primary mt-1" /></label>)}</div></div>
+          <div className="flex justify-end gap-2 border-t border-white/10 px-4 py-3"><button type="button" className="btn btn-ghost text-white" onClick={closeCropEditor}>Cancel</button><button type="button" className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white" onClick={applyCrop}>Use cropped image</button></div>
         </section>
       </div>, document.body)}
     </div>
