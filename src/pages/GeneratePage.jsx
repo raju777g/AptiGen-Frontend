@@ -30,6 +30,7 @@ export default function GeneratePage() {
   const [cameraReady, setCameraReady] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
+  const [isCameraFullscreen, setIsCameraFullscreen] = useState(false);
   const [cropEditor, setCropEditor] = useState(null);
   const [cropRect, setCropRect] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const [uploadError, setUploadError] = useState("");
@@ -38,6 +39,7 @@ export default function GeneratePage() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
   const cameraVideoRef = useRef(null);
+  const cameraModalRef = useRef(null);
   const cropStageRef = useRef(null);
   const cropDragRef = useRef(null);
 
@@ -112,7 +114,16 @@ export default function GeneratePage() {
     }
   };
 
-  const closeCamera = () => { setCameraReady(false); setTorchEnabled(false); setTorchSupported(false); setCameraStream(null); };
+  const closeCamera = () => { if (document.fullscreenElement) document.exitFullscreen?.().catch?.(() => {}); setIsCameraFullscreen(false); setCameraReady(false); setTorchEnabled(false); setTorchSupported(false); setCameraStream(null); };
+
+  const toggleCameraFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await cameraModalRef.current?.requestFullscreen?.();
+    } catch {
+      setUploadError("Full screen mode is not available in this browser.");
+    }
+  };
 
   const toggleTorch = async () => {
     const track = cameraStream?.getVideoTracks?.()[0];
@@ -131,6 +142,12 @@ export default function GeneratePage() {
     if (cameraVideoRef.current) cameraVideoRef.current.srcObject = cameraStream;
     return () => cameraStream.getTracks().forEach((track) => track.stop());
   }, [cameraStream]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsCameraFullscreen(document.fullscreenElement === cameraModalRef.current);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     if (!imagePreview) return undefined;
@@ -156,7 +173,11 @@ export default function GeneratePage() {
 
   const openCropEditor = (file, page = null, index = null) => {
     setCropRect({ x: 0, y: 0, width: 100, height: 100 });
-    setCropEditor({ file, url: URL.createObjectURL(file), page, index, width: 0, height: 0 });
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => setCropEditor((current) => current?.url === url ? { ...current, width: image.naturalWidth, height: image.naturalHeight } : current);
+    image.src = url;
+    setCropEditor({ file, url, page, index, width: 0, height: 0 });
   };
 
   const closeCropEditor = () => {
@@ -498,20 +519,20 @@ export default function GeneratePage() {
 
         {cameraStream && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) closeCamera(); }}>
-            <section className="w-full max-w-lg overflow-hidden rounded-3xl border border-violet-400/40 bg-slate-900 text-white shadow-2xl shadow-violet-950/50" role="dialog" aria-modal="true" aria-label="Take a study page photo">
-              <div className="flex items-center justify-between px-4 py-3 sm:px-5">
-                <div><h2 className="font-hero font-bold">Take a photo</h2><p className="text-xs text-slate-300">Keep the whole page in frame</p></div>
+            <section ref={cameraModalRef} className={`w-full overflow-hidden border border-violet-400/40 bg-slate-900 text-white shadow-2xl shadow-violet-950/50 ${isCameraFullscreen ? "h-full max-w-none rounded-none" : "max-w-lg rounded-3xl"}`} role="dialog" aria-modal="true" aria-label="Take a study page photo">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-2"><button type="button" className="btn btn-sm btn-outline shrink-0 text-white" onClick={toggleCameraFullscreen} aria-label={isCameraFullscreen ? "Exit full screen" : "Enter full screen"}>{isCameraFullscreen ? "⛶ Exit full screen" : "⛶ Full screen"}</button><div className="min-w-0"><h2 className="font-hero font-bold">Take a photo</h2><p className="text-xs text-slate-300">Keep the whole page in frame</p></div></div>
                 <button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCamera} aria-label="Close camera">×</button>
               </div>
               <div className="relative bg-black">
                 <video ref={cameraVideoRef} autoPlay playsInline muted onCanPlay={() => setCameraReady(true)} className="max-h-[65vh] min-h-64 w-full object-contain" />
                 <div className="pointer-events-none absolute inset-[8%] rounded-xl border border-white/50" />
+                <button type="button" disabled={!cameraReady} className="absolute bottom-4 left-1/2 grid h-16 w-16 -translate-x-1/2 place-items-center rounded-full border-4 border-white/90 bg-white/30 text-2xl text-white shadow-xl backdrop-blur-sm transition hover:bg-white/45 disabled:opacity-50" onClick={capturePhoto} aria-label="Capture image">●</button>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-5">
                 <button type="button" className="btn btn-ghost min-w-0 max-w-full text-white" onClick={() => { closeCamera(); openImagePicker(); }}>Choose from photos</button>
                 <div className="flex min-w-0 flex-1 flex-wrap justify-end gap-2 sm:flex-none">
                   <button type="button" disabled={!torchSupported} className={`btn btn-sm max-w-full ${torchEnabled ? "bg-amber-300 text-slate-950" : "btn-outline text-white"}`} onClick={toggleTorch} title={torchSupported ? "Toggle camera lighting" : "Camera lighting is not supported on this device"}>{torchEnabled ? "☀ Lighting on" : "☼ Lighting"}</button>
-                  <button type="button" disabled={!cameraReady} className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 text-white" onClick={capturePhoto}>● &nbsp; Capture</button>
                 </div>
               </div>
             </section>
@@ -559,7 +580,7 @@ export default function GeneratePage() {
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><h2 className="font-semibold">Crop image</h2><p className="text-xs text-slate-400">Trim the edges before adding this page.</p></div><button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCropEditor} aria-label="Close crop editor">×</button></div>
           <div className="p-4 sm:p-5">
             <div ref={cropStageRef} style={cropEditor.width ? { aspectRatio: `${cropEditor.width} / ${cropEditor.height}` } : undefined} className="relative mx-auto max-h-[62vh] w-full max-w-2xl touch-none overflow-hidden rounded-xl bg-black" onPointerMove={moveCropInteraction} onPointerUp={endCropInteraction} onPointerCancel={endCropInteraction}>
-              <img src={cropEditor.url} alt="Crop preview" className="block h-full w-full object-contain" onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} />
+              <img src={cropEditor.url} alt="Crop preview" className={cropEditor.width ? "block h-full w-full object-contain" : "block max-h-[62vh] max-w-full object-contain"} onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} />
               <div className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,.55)]" style={{ left: `${cropRect.x}%`, top: `${cropRect.y}%`, width: `${cropRect.width}%`, height: `${cropRect.height}%` }} onPointerDown={(event) => startCropInteraction("move", event)}>
                 <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3"><i className="border-r border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-r border-white/60" /><i className="border-r" /><i className="border-r" /><i className="border-r" /><i /></div>
                 {[["top-left", "-left-2 -top-2 cursor-nwse-resize"], ["top-right", "-right-2 -top-2 cursor-nesw-resize"], ["bottom-left", "-left-2 -bottom-2 cursor-nesw-resize"], ["bottom-right", "-right-2 -bottom-2 cursor-nwse-resize"]].map(([mode, classes]) => <button key={mode} type="button" aria-label={`Resize crop ${mode}`} className={`absolute h-5 w-5 rounded-full border-2 border-white bg-cyan-400 shadow ${classes}`} onPointerDown={(event) => startCropInteraction(mode, event)} />)}
