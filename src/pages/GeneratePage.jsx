@@ -31,13 +31,15 @@ export default function GeneratePage() {
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [cropEditor, setCropEditor] = useState(null);
-  const [cropValues, setCropValues] = useState({ top: 0, right: 0, bottom: 0, left: 0 });
+  const [cropRect, setCropRect] = useState({ x: 0, y: 0, width: 100, height: 100 });
   const [uploadError, setUploadError] = useState("");
   const [coinWarning, setCoinWarning] = useState("");
 
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
   const cameraVideoRef = useRef(null);
+  const cropStageRef = useRef(null);
+  const cropDragRef = useRef(null);
 
   const { generateTest, isGenerating, error } = useTestStore();
   const [createdTest, setCreatedTest] = useState(null);
@@ -153,8 +155,8 @@ export default function GeneratePage() {
   };
 
   const openCropEditor = (file, page = null, index = null) => {
-    setCropValues({ top: 0, right: 0, bottom: 0, left: 0 });
-    setCropEditor({ file, url: URL.createObjectURL(file), page, index });
+    setCropRect({ x: 0, y: 0, width: 100, height: 100 });
+    setCropEditor({ file, url: URL.createObjectURL(file), page, index, width: 0, height: 0 });
   };
 
   const closeCropEditor = () => {
@@ -162,26 +164,46 @@ export default function GeneratePage() {
     setCropEditor(null);
   };
 
-  const updateCrop = (side, value) => {
-    const nextValue = Number(value);
-    setCropValues((current) => {
-      const next = { ...current, [side]: nextValue };
-      const vertical = next.top + next.bottom;
-      const horizontal = next.left + next.right;
-      if (vertical > 85 || horizontal > 85) return current;
-      return next;
-    });
+  const startCropInteraction = (mode, event) => {
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    cropDragRef.current = { mode, startX: event.clientX, startY: event.clientY, initial: { ...cropRect } };
+  };
+
+  const moveCropInteraction = (event) => {
+    const drag = cropDragRef.current;
+    const stage = cropStageRef.current;
+    if (!drag || !stage) return;
+    const bounds = stage.getBoundingClientRect();
+    const dx = ((event.clientX - drag.startX) / bounds.width) * 100;
+    const dy = ((event.clientY - drag.startY) / bounds.height) * 100;
+    const start = drag.initial;
+    let next = { ...start };
+    if (drag.mode === "move") {
+      next.x = Math.min(100 - start.width, Math.max(0, start.x + dx));
+      next.y = Math.min(100 - start.height, Math.max(0, start.y + dy));
+    } else {
+      if (drag.mode.includes("left")) { const right = start.x + start.width; next.x = Math.min(right - 10, Math.max(0, start.x + dx)); next.width = right - next.x; }
+      if (drag.mode.includes("right")) next.width = Math.max(10, Math.min(100 - start.x, start.width + dx));
+      if (drag.mode.includes("top")) { const bottom = start.y + start.height; next.y = Math.min(bottom - 10, Math.max(0, start.y + dy)); next.height = bottom - next.y; }
+      if (drag.mode.includes("bottom")) next.height = Math.max(10, Math.min(100 - start.y, start.height + dy));
+    }
+    setCropRect(next);
+  };
+
+  const endCropInteraction = () => {
+    cropDragRef.current = null;
   };
 
   const applyCrop = () => {
     if (!cropEditor) return;
     const image = new Image();
     image.onload = () => {
-      const { top, right, bottom, left } = cropValues;
-      const sourceX = Math.round(image.naturalWidth * left / 100);
-      const sourceY = Math.round(image.naturalHeight * top / 100);
-      const sourceWidth = Math.max(1, Math.round(image.naturalWidth * (100 - left - right) / 100));
-      const sourceHeight = Math.max(1, Math.round(image.naturalHeight * (100 - top - bottom) / 100));
+      const { x, y, width, height } = cropRect;
+      const sourceX = Math.round(image.naturalWidth * x / 100);
+      const sourceY = Math.round(image.naturalHeight * y / 100);
+      const sourceWidth = Math.max(1, Math.round(image.naturalWidth * width / 100));
+      const sourceHeight = Math.max(1, Math.round(image.naturalHeight * height / 100));
       const canvas = document.createElement("canvas");
       canvas.width = sourceWidth;
       canvas.height = sourceHeight;
@@ -485,11 +507,11 @@ export default function GeneratePage() {
                 <video ref={cameraVideoRef} autoPlay playsInline muted onCanPlay={() => setCameraReady(true)} className="max-h-[65vh] min-h-64 w-full object-contain" />
                 <div className="pointer-events-none absolute inset-[8%] rounded-xl border border-white/50" />
               </div>
-              <div className="flex items-center justify-between gap-3 p-4 sm:px-5">
-                <button type="button" className="btn btn-ghost text-white" onClick={() => { closeCamera(); openImagePicker(); }}>Choose from photos</button>
-                <div className="flex items-center gap-2">
-                  <button type="button" disabled={!torchSupported} className={`btn btn-sm ${torchEnabled ? "bg-amber-300 text-slate-950" : "btn-outline text-white"}`} onClick={toggleTorch} title={torchSupported ? "Toggle camera lighting" : "Camera lighting is not supported on this device"}>{torchEnabled ? "☀ Lighting on" : "☼ Lighting"}</button>
-                  <button type="button" disabled={!cameraReady} className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 text-white" onClick={capturePhoto}>● &nbsp; Capture</button>
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:px-5">
+                <button type="button" className="btn btn-ghost min-w-0 max-w-full text-white" onClick={() => { closeCamera(); openImagePicker(); }}>Choose from photos</button>
+                <div className="flex min-w-0 flex-1 flex-wrap justify-end gap-2 sm:flex-none">
+                  <button type="button" disabled={!torchSupported} className={`btn btn-sm max-w-full ${torchEnabled ? "bg-amber-300 text-slate-950" : "btn-outline text-white"}`} onClick={toggleTorch} title={torchSupported ? "Toggle camera lighting" : "Camera lighting is not supported on this device"}>{torchEnabled ? "☀ Lighting on" : "☼ Lighting"}</button>
+                  <button type="button" disabled={!cameraReady} className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 text-white" onClick={capturePhoto}>● &nbsp; Capture</button>
                 </div>
               </div>
             </section>
@@ -535,7 +557,16 @@ export default function GeneratePage() {
       {cropEditor && createPortal(<div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-3 backdrop-blur-md sm:p-6">
         <section role="dialog" aria-modal="true" aria-label="Crop image" className="w-full max-w-3xl overflow-hidden rounded-2xl border border-cyan-300/25 bg-slate-900 text-white shadow-2xl">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div><h2 className="font-semibold">Crop image</h2><p className="text-xs text-slate-400">Trim the edges before adding this page.</p></div><button type="button" className="btn btn-circle btn-sm btn-ghost text-xl text-white" onClick={closeCropEditor} aria-label="Close crop editor">×</button></div>
-          <div className="grid gap-5 p-4 sm:grid-cols-[1fr_220px] sm:p-5"><div className="grid min-h-64 place-items-center overflow-hidden rounded-xl bg-black p-3"><img src={cropEditor.url} alt="Crop preview" className="max-h-[55vh] max-w-full object-contain" style={{ clipPath: `inset(${cropValues.top}% ${cropValues.right}% ${cropValues.bottom}% ${cropValues.left}%)` }} /></div><div className="space-y-4 text-sm">{[["top", "Top"], ["right", "Right"], ["bottom", "Bottom"], ["left", "Left"]].map(([side, label]) => <label key={side} className="block">{label}: {cropValues[side]}%<input type="range" min="0" max="80" value={cropValues[side]} onChange={(event) => updateCrop(side, event.target.value)} className="range range-xs range-primary mt-1" /></label>)}</div></div>
+          <div className="p-4 sm:p-5">
+            <div ref={cropStageRef} style={cropEditor.width ? { aspectRatio: `${cropEditor.width} / ${cropEditor.height}` } : undefined} className="relative mx-auto max-h-[62vh] w-full max-w-2xl touch-none overflow-hidden rounded-xl bg-black" onPointerMove={moveCropInteraction} onPointerUp={endCropInteraction} onPointerCancel={endCropInteraction}>
+              <img src={cropEditor.url} alt="Crop preview" className="block h-full w-full object-contain" onLoad={(event) => setCropEditor((current) => current ? { ...current, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight } : current)} />
+              <div className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,.55)]" style={{ left: `${cropRect.x}%`, top: `${cropRect.y}%`, width: `${cropRect.width}%`, height: `${cropRect.height}%` }} onPointerDown={(event) => startCropInteraction("move", event)}>
+                <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3"><i className="border-r border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-b border-white/60" /><i className="border-r border-b border-white/60" /><i className="border-r border-white/60" /><i className="border-r" /><i className="border-r" /><i className="border-r" /><i /></div>
+                {[["top-left", "-left-2 -top-2 cursor-nwse-resize"], ["top-right", "-right-2 -top-2 cursor-nesw-resize"], ["bottom-left", "-left-2 -bottom-2 cursor-nesw-resize"], ["bottom-right", "-right-2 -bottom-2 cursor-nwse-resize"]].map(([mode, classes]) => <button key={mode} type="button" aria-label={`Resize crop ${mode}`} className={`absolute h-5 w-5 rounded-full border-2 border-white bg-cyan-400 shadow ${classes}`} onPointerDown={(event) => startCropInteraction(mode, event)} />)}
+              </div>
+            </div>
+            <p className="mt-3 text-center text-xs text-slate-400">Drag the crop area to reposition it. Drag a corner to resize.</p>
+          </div>
           <div className="flex justify-end gap-2 border-t border-white/10 px-4 py-3"><button type="button" className="btn btn-ghost text-white" onClick={closeCropEditor}>Cancel</button><button type="button" className="btn border-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white" onClick={applyCrop}>Use cropped image</button></div>
         </section>
       </div>, document.body)}
